@@ -1,0 +1,94 @@
+datasource db {
+  provider = "mysql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String   @db.VarChar(255)
+  email        String   @unique @db.VarChar(255)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  role         Role     @default(CUSTOMER)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  events   Event[]
+  bookings Booking[]
+
+  @@map("users")
+}
+
+enum Role {
+  CUSTOMER
+  ORGANIZER
+  ADMIN
+}
+
+model Event {
+  id          Int         @id @default(autoincrement())
+  ogranizerId Int         @map("organizer_id")
+  eventName   String      @map("event_name") @db.VarChar(255)
+  description String      @db.VarChar(1000)
+  location    String      @db.VarChar(255)
+  dateTime    DateTime    @map("date_time")
+  duration    String      @db.VarChar(50)
+  thumbnail   String      @db.VarChar(500)
+  banner      String      @db.VarChar(500)
+  status      EventStatus @default(DRAFT)
+  createdAt   DateTime    @default(now()) @map("created_at")
+
+  organizer   User         @relation(fields: [ogranizerId], references: [id], onDelete: Cascade)
+  ticketTiers TicketTier[]
+  bookings    Booking[]
+
+  @@map("events")
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+  COMPLETED
+}
+
+model TicketTier {
+  id                       Int     @id @default(autoincrement())
+  eventId                  Int     @map("event_id")
+  tierName                 String  @map("tier_name") @db.VarChar(255)
+  totalSeats               Int     @map("total_seats")
+  availableSeats           Int     @map("available_seats")
+  pricePerSeatExculdingTax Decimal @map("price_per_seat_excluding_tax") @db.Decimal(10, 2)
+  taxPercentage            Decimal @default(0.00) @map("tax_percentage") @db.Decimal(5, 2)
+
+  event    Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  bookings Booking[]
+
+  @@map("ticket_tiers")
+}
+
+model Booking {
+  id             Int           @id @default(autoincrement())
+  userId         Int           @map("user_id")
+  eventId        Int           @map("event_id")
+  ticketTierId   Int           @map("ticket_tier_id")
+  quantity       Int
+  totalPricePaid Decimal       @map("total_price_paid") @db.Decimal(10, 2)
+  paymentStatus  PaymentStatus @default(PENDING) @map("payment_status")
+  createdAt      DateTime      @default(now()) @map("created_at")
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event      Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  ticketTier TicketTier @relation(fields: [ticketTierId], references: [id], onDelete: Cascade)
+
+  @@map("bookings")
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
