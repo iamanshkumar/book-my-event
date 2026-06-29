@@ -5,18 +5,28 @@ import { jwtVerify } from 'jose';
 const JWT_SECRET = process.env.JWT_SECRET;
 const encodedSecret = new TextEncoder().encode(JWT_SECRET);
 
-const PROTECTED_ROUTES = ['/dashboard', '/api/events/create', '/api/bookings'];
+const PROTECTED_ROUTES = [
+  '/dashboard',
+  '/api/events/create',
+  '/api/event/create',
+  '/api/bookings',
+  '/api/booking'
+];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  console.log("=== MIDDLEWARE TRIGGERED ===");
+  console.log("Pathname:", pathname);
   const isProtectedRoute = PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
+  console.log("Is protected route:", isProtectedRoute);
 
   if (!isProtectedRoute) {
     return NextResponse.next();
   }
 
   const sessionToken = request.cookies.get('session_token')?.value;
-
+  console.log("Found Cookie Token?:", sessionToken ? "YES (Valid String)" : "NO (null/undefined)");
+  console.log("=============================");
   if (!sessionToken) {
     if (pathname.startsWith('/api/')) {
       return NextResponse.json({ error: 'Authentication token missing.' }, { status: 401 });
