@@ -8,11 +8,6 @@ export async function POST(request : Request){
         const organizerIdStr = headerList.get("x-user-id");
         const userRole = headerList.get("x-user-role");
 
-        console.log("--- DEBUG EVENT CREATION ---");
-    console.log("Injected User ID:", organizerIdStr);
-    console.log("Injected User Role:", userRole);
-    console.log("----------------------------");
-
         if(!organizerIdStr || userRole!=="ORGANIZER"){
             return NextResponse.json({
                 error: 'Forbidden. Only users with the ORGANIZER role can create events.' ,
