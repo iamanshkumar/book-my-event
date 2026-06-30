@@ -12,7 +12,7 @@ export class DashboardService{
                         totalSeats : true,
                         availableSeats : true,
                         tierName : true,
-                        pricePerSeatExculdingTax : true
+                        pricePerSeatExcludingTax : true
                     }
                 },
                 bookings:  {

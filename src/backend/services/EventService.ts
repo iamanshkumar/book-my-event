@@ -24,7 +24,7 @@ export class EventService {
         return await prisma.$transaction(async(tx)=>{
             const event = await tx.event.create({
                 data : {
-                    ogranizerId : input.ogranizerId,
+                    organizerId : input.ogranizerId,
                     eventName : input.name,
                     description : input.description ?? null,
                     location : input.location,
@@ -43,7 +43,7 @@ export class EventService {
                         tierName : tier.name,
                         totalSeats : tier.totalSeats,
                         availableSeats : tier.totalSeats,
-                        pricePerSeatExculdingTax : tier.price,
+                        pricePerSeatExcludingTax : tier.price,
                         taxPercentage : tier.taxPercentage || 0
                     }
                 })

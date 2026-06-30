@@ -18,7 +18,7 @@ export async function GET(){
                         id : true,
                         tierName : true,
                         availableSeats : true,
-                        pricePerSeatExculdingTax  : true,
+                        pricePerSeatExcludingTax  : true,
                         taxPercentage : true
                     }
                 },

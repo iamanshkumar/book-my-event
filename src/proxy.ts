@@ -11,7 +11,7 @@ const PROTECTED_ROUTES = [
   '/api/event/create',
   '/api/bookings',
   '/api/booking',
-  '/api/organizer',
+  '/api/organizer/dashboard',
   '/api/payments/webhooks'
 ];
 

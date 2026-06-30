@@ -64,7 +64,7 @@ model TicketTier {
   tierName                 String  @map("tier_name") @db.VarChar(255)
   totalSeats               Int     @map("total_seats")
   availableSeats           Int     @map("available_seats")
-  pricePerSeatExculdingTax Decimal @map("price_per_seat_excluding_tax") @db.Decimal(10, 2)
+  pricePerSeatExcludingTax Decimal @map("price_per_seat_excluding_tax") @db.Decimal(10, 2)
   taxPercentage            Decimal @default(0.00) @map("tax_percentage") @db.Decimal(5, 2)
 
   event    Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
