@@ -1,3 +1,4 @@
+import { prisma } from "@/backend/lib/prisma";
 import { BookingService } from "@/backend/services/BookingService";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
@@ -41,6 +42,48 @@ export async function POST(request : Request){
     }catch(err : any){
         return NextResponse.json({
             error: err.message || 'An error occurred while building your booking reservation.'
+        },{
+            status : 500
+        })
+    }
+}
+
+export async function GET(){
+    try{
+        const headerList = await headers();
+        const userId = parseInt(headerList.get("x-user-id") || '0' , 10);
+
+        if(!userId){
+            return NextResponse.json({
+                error : "Unauthorised"
+            },{
+                status : 401
+            });
+        }
+
+        const userBookings = await prisma.booking.findMany({
+            where : {userId},
+            include : {
+                event : {
+                    select : {eventName: true, dateTime: true, location: true, thumbnail: true}
+                },
+                ticketTier : {
+                    select: { tierName: true, pricePerSeatExcludingTax: true }
+                }
+            },
+            orderBy : {
+                createdAt: 'desc'
+            }
+        });
+
+        return NextResponse.json({
+            bookings : userBookings
+        },{
+            status : 200
+        });
+    }catch(err : any){
+        return NextResponse.json({
+            error : err.message
         },{
             status : 500
         })
