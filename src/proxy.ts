@@ -8,14 +8,13 @@ const encodedSecret = new TextEncoder().encode(JWT_SECRET);
 const PROTECTED_ROUTES = [
   '/dashboard',
   '/api/events/create',
-  '/api/event/create',
   '/api/bookings',
-  '/api/booking',
   '/api/organizer/dashboard',
   '/api/payments/webhooks',
   '/api/auth/me',
   '/api/users/profile',
-  '/api/auth/change-password'
+  '/api/auth/change-password',
+  '/api/events/'
 ];
 
 export async function proxy(request: NextRequest) {
