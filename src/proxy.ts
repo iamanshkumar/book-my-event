@@ -11,6 +11,7 @@ const PROTECTED_ROUTES = [
   '/api/bookings',
   '/api/organizer/dashboard',
   '/api/organizer/events',
+  '/api/organizer/bookings',
   '/api/payments/webhooks',
   '/api/auth/me',
   '/api/users/profile',
