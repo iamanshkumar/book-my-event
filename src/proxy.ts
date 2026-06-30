@@ -10,6 +10,7 @@ const PROTECTED_ROUTES = [
   '/api/events/create',
   '/api/bookings',
   '/api/organizer/dashboard',
+  '/api/organizer/events',
   '/api/payments/webhooks',
   '/api/auth/me',
   '/api/users/profile',
