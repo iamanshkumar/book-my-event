@@ -11,7 +11,8 @@ const PROTECTED_ROUTES = [
   '/api/event/create',
   '/api/bookings',
   '/api/booking',
-  '/api/organizer'
+  '/api/organizer',
+  '/api/payments/webhooks'
 ];
 
 export async function proxy(request: NextRequest) {
