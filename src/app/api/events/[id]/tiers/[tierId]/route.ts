@@ -86,3 +86,63 @@ export async function PUT(request : Request , context : RouteContext){
         });
     }
 }
+
+export async function DELETE(request : Request , context : RouteContext){
+    try{
+        const {id , tierId} = await context.params;
+        const eventId = parseInt(id , 10);
+        const targetTierId = parseInt(tierId , 10);
+
+        const headerList = await headers();
+        const organizerId = parseInt(headerList.get("x-user-id") || '0' , 10);
+
+        const event = await prisma.event.findUnique({
+            where : {id : eventId}
+        });
+
+        if(!event){
+            return NextResponse.json({
+                error : "Event not found"
+            },{
+                status : 404
+            });
+        }
+
+        if(event.organizerId!==organizerId){
+            return NextResponse.json({
+                error : "Forbidden."
+            },{
+                status : 403
+            });
+        }
+
+        const tierCheck = await prisma.ticketTier.findUnique({
+            where : {id : targetTierId},
+            include: { _count: { select: { bookings: true } } }
+        });
+
+        if(tierCheck && tierCheck._count.bookings > 0){
+            return NextResponse.json({
+                error : 'Cannot remove a tier that already possesses confirmed bookings.'
+            },{
+                status : 400
+            });
+        }
+
+        await prisma.ticketTier.delete({
+            where : {id : targetTierId}
+        });
+
+        return NextResponse.json({
+            message : "Ticket tier removed from event catalog listings."
+        },{
+            status : 200
+        });
+    }catch(err : any){
+        return NextResponse.json({
+            error : err.message
+        },{
+            status : 500
+        });
+    }
+}
