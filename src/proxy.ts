@@ -15,7 +15,8 @@ const PROTECTED_ROUTES = [
   '/api/auth/me',
   '/api/users/profile',
   '/api/auth/change-password',
-  '/api/events/'
+  '/api/events/',
+  '/api/admin/'
 ];
 
 export async function proxy(request: NextRequest) {
