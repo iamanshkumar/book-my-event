@@ -8,7 +8,7 @@ interface TicketTierInput{
 }
 
 interface CreateEventInput{
-    ogranizerId : number;
+    organizerId : number;
     name : string;
     description? : string;
     location : string;
@@ -24,7 +24,7 @@ export class EventService {
         return await prisma.$transaction(async(tx)=>{
             const event = await tx.event.create({
                 data : {
-                    organizerId : input.ogranizerId,
+                    organizerId : input.organizerId,
                     eventName : input.name,
                     description : input.description ?? null,
                     location : input.location,

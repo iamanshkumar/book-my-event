@@ -16,7 +16,7 @@ export async function POST(request : Request){
             })
         }
 
-        const ogranizerId = parseInt(organizerIdStr , 10);
+        const organizerId = parseInt(organizerIdStr , 10);
         const body = await request.json();
 
         const {name , location , dateTime , duration , ticketTiers , description , banner , thumbnail} = body;
@@ -30,7 +30,7 @@ export async function POST(request : Request){
         }
 
         const newEvent = await EventService.createEventWithTiers({
-            ogranizerId,
+            organizerId,
             name,
             description,
             location,
