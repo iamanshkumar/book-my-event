@@ -79,7 +79,7 @@ export class BookingService{
 
         try{
             await resend.emails.send({
-                from : 'onboarding@resend.dev',
+                from : 'BookMyEvent <onboarding@resend.dev>',
                 to : result.user.email,
                 subject : `Your Booking Reservation for ${result.event.eventName}`,
                 html: `

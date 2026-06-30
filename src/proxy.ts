@@ -10,7 +10,8 @@ const PROTECTED_ROUTES = [
   '/api/events/create',
   '/api/event/create',
   '/api/bookings',
-  '/api/booking'
+  '/api/booking',
+  '/api/organizer'
 ];
 
 export async function proxy(request: NextRequest) {

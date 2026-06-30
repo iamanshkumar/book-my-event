@@ -33,7 +33,7 @@ enum Role {
 
 model Event {
   id          Int         @id @default(autoincrement())
-  ogranizerId Int         @map("organizer_id")
+  organizerId Int         @map("organizer_id")
   eventName   String      @map("event_name") @db.VarChar(255)
   description String?     @db.VarChar(1000)
   location    String      @db.VarChar(255)
@@ -44,7 +44,7 @@ model Event {
   status      EventStatus @default(DRAFT)
   createdAt   DateTime    @default(now()) @map("created_at")
 
-  organizer   User         @relation(fields: [ogranizerId], references: [id], onDelete: Cascade)
+  organizer   User         @relation(fields: [organizerId], references: [id], onDelete: Cascade)
   ticketTiers TicketTier[]
   bookings    Booking[]
 
