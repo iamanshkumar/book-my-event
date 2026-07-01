@@ -1,292 +1,230 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, Ticket, Loader2 } from "lucide-react";
+import { 
+  Ticket, 
+  Loader2, 
+  CreditCard, 
+  Calendar, 
+  MapPin, 
+  ArrowRight, 
+  Clock, 
+  AlertCircle 
+} from "lucide-react";
 import { toast } from "sonner";
 
-interface TicketTier {
+interface Booking {
   id: number;
-  tierName: string;
-  availableSeats: number;
-  pricePerSeatExcludingTax: string;
-  taxPercentage: string;
-}
-
-interface Event {
-  id: number;
-  organizerId: number;
-  eventName: string;
-  description: string;
-  location: string;
-  dateTime: string;
-  duration: string;
-  thumbnail: string | null;
-  banner: string | null;
-  status: string;
+  quantity: number;
+  totalPricePaid: string;
+  paymentStatus: "PENDING" | "SUCCESS" | "FAILED" | "REFUNDED";
   createdAt: string;
-  ticketTiers: TicketTier[];
-  organizer: {
-    name: string;
+  event: {
+    eventName: string;
+    dateTime: string;
+    location: string;
+  };
+  ticketTier: {
+    tierName: string;
   };
 }
 
 export default function AttendeeDashboard() {
-  const [events, setEvents] = useState<Event[]>([]);
+  const router = useRouter();
+  const [user, setUser] = useState<any>(null);
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
-  const [bookingState, setBookingState] = useState<Record<number, { tierId: number; quantity: number }>>({});
 
   useEffect(() => {
-    async function fetchEvents() {
+    async function loadDashboardData() {
       try {
-        const response = await fetch("/api/events/list");
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || "Failed to load events.");
+        // 1. Load user profile
+        const userRes = await fetch("/api/auth/me");
+        const userData = await userRes.json();
+        if (!userRes.ok) {
+          throw new Error(userData.error || "Failed to load profile.");
         }
+        setUser(userData.user);
 
-        setEvents(data.events);
+        // 2. Load bookings
+        const bookingsRes = await fetch("/api/bookings");
+        const bookingsData = await bookingsRes.json();
+        if (!bookingsRes.ok) {
+          throw new Error(bookingsData.error || "Failed to load bookings.");
+        }
+        setBookings(bookingsData.bookings || []);
 
-        // Initialize booking states
-        const initialStates: Record<number, { tierId: number; quantity: number }> = {};
-        data.events.forEach((event: Event) => {
-          if (event.ticketTiers && event.ticketTiers.length > 0) {
-            initialStates[event.id] = {
-              tierId: event.ticketTiers[0].id,
-              quantity: 1,
-            };
-          }
-        });
-        setBookingState(initialStates);
       } catch (err: any) {
-        toast.error("Fetching events failed", {
+        toast.error("Dashboard failed to load", {
           description: err.message,
-        })
+        });
       } finally {
         setLoading(false);
       }
     }
-    fetchEvents();
+    loadDashboardData();
   }, []);
 
-  const handleTierChange = (eventId: number, tierId: number) => {
-    setBookingState((prev) => ({
-      ...prev,
-      [eventId]: {
-        ...prev[eventId],
-        tierId,
-        quantity: 1,
-      },
-    }));
-  };
-
-  const handleQuantityChange = (eventId: number, delta: number, maxSeats: number) => {
-    setBookingState((prev) => {
-      const current = prev[eventId] || { tierId: 0, quantity: 1 };
-      const newQty = Math.max(1, Math.min(maxSeats, current.quantity + delta));
-      return {
-        ...prev,
-        [eventId]: {
-          ...current,
-          quantity: newQty,
-        },
-      };
-    });
-  };
-
-  const handleBookTicket = async (eventId: number) => {
-    const booking = bookingState[eventId];
-    if (!booking || !booking.tierId) {
-      toast.error("Please select a ticket tier.");
-      return;
-    }
-
-    const toastId = toast.loading("Processing ticket booking...");
-    try {
-      const response = await fetch("/api/bookings", {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ticketTierId: booking.tierId,
-          quantity: booking.quantity,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Could not check out.");
-      }
-
-      toast.dismiss(toastId);
-      toast.success("Ticket booked successfully!");
-
-      // Update seats remaining client side
-      setEvents((prevEvents) =>
-        prevEvents.map((event) => {
-          if (event.id === eventId) {
-            return {
-              ...event,
-              ticketTiers: event.ticketTiers.map((tier) => {
-                if (tier.id === booking.tierId) {
-                  return {
-                    ...tier,
-                    availableSeats: Math.max(0, tier.availableSeats - booking.quantity),
-                  };
-                }
-                return tier;
-              }),
-            };
-          }
-          return event;
-        })
-      );
-
-      // Reset quantity
-      setBookingState((prev) => ({
-        ...prev,
-        [eventId]: {
-          ...prev[eventId],
-          quantity: 1,
-        },
-      }));
-    } catch (err: any) {
-      toast.dismiss(toastId);
-      toast.error("Booking failed", {
-        description: err.message,
-      });
-    }
-  };
+  // Calculators
+  const activeBookings = bookings.filter((b) => b.paymentStatus !== "FAILED");
+  const totalTickets = activeBookings.reduce((sum, b) => sum + b.quantity, 0);
+  const totalSpent = activeBookings
+    .filter((b) => b.paymentStatus === "SUCCESS")
+    .reduce((sum, b) => sum + parseFloat(b.totalPricePaid), 0);
 
   if (loading) {
     return (
       <div className="h-[60vh] w-full flex items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-foreground/40" />
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
-      {/* Metric Summaries Header Canvas Row */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Card className="border border-border bg-card shadow-none rounded-lg p-2">
+    <div className="space-y-8 max-w-5xl mx-auto">
+      {/* 1. Welcoming Hero Banner */}
+      <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-border p-6 sm:p-8 rounded-xl shadow-xs">
+        <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+          Welcome back, {user?.name || "Customer"}!
+        </h2>
+        <p className="text-xs sm:text-sm text-foreground/60 font-light mt-1 max-w-xl leading-relaxed">
+          Manage your reserved access passes, review receipts, and monitor status updates on all events you have booked.
+        </p>
+      </div>
+
+      {/* 2. Metric Dashboard Summary Cards */}
+      <div className="grid gap-4 sm:grid-cols-3">
+        {/* Total Bookings */}
+        <Card className="border border-border bg-card shadow-xs rounded-xl p-1">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <span className="text-xs font-medium uppercase tracking-wider text-foreground/60">Registered Events</span>
-            <Ticket className="h-4 w-4 text-foreground/40" />
+            <span className="text-[10px] font-bold uppercase tracking-wider text-foreground/50">Total Orders</span>
+            <Ticket className="h-4 w-4 text-foreground/30" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold tracking-tight">1</div>
+            <div className="text-2xl font-bold tracking-tight">{bookings.length}</div>
+            <p className="text-[10px] text-foreground/45 mt-0.5">Orders placed on system</p>
+          </CardContent>
+        </Card>
+
+        {/* Tickets Booked */}
+        <Card className="border border-border bg-card shadow-xs rounded-xl p-1">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-foreground/50">Tickets Booked</span>
+            <Ticket className="h-4 w-4 text-foreground/30" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold tracking-tight">{totalTickets}</div>
+            <p className="text-[10px] text-foreground/45 mt-0.5">Seats reserved in total</p>
+          </CardContent>
+        </Card>
+
+        {/* Total Expenditure */}
+        <Card className="border border-border bg-card shadow-xs rounded-xl p-1">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-foreground/50">Total Investment</span>
+            <CreditCard className="h-4 w-4 text-foreground/30" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold tracking-tight">₹{totalSpent.toFixed(2)}</div>
+            <p className="text-[10px] text-foreground/45 mt-0.5">Successful payment value</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Primary Section */}
+      {/* 3. Ticket Purchase History Section */}
       <div className="space-y-4">
         <div>
-          <h2 className="text-xl font-semibold tracking-tight">Upcoming Events</h2>
-          <p className="text-sm text-foreground/60 font-light">Explore, collaborate, and book your spots inside upcoming initiatives.</p>
+          <h3 className="text-lg font-bold tracking-tight">Ticket Purchase History</h3>
+          <p className="text-xs text-foreground/50 font-light mt-0.5">
+            A comprehensive list of your past and active event tickets.
+          </p>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 pt-2">
-          {events.map((event) => {
-            const currentBooking = bookingState[event.id];
-            const selectedTier = event.ticketTiers.find((t) => t.id === currentBooking?.tierId);
-            const availableSeats = selectedTier?.availableSeats ?? 0;
+        {bookings.length === 0 ? (
+          /* Empty State */
+          <div className="flex flex-col items-center justify-center py-16 border border-dashed border-border rounded-xl bg-card/30 space-y-4">
+            <Ticket className="h-8 w-8 text-foreground/20" />
+            <div className="text-center">
+              <h4 className="text-sm font-semibold">No Ticket Purchases Found</h4>
+              <p className="text-xs text-foreground/50 font-light mt-1">
+                You haven't purchased any tickets yet. Start exploring active event lists to reserve seats.
+              </p>
+            </div>
+            <Button
+              onClick={() => router.push("/")}
+              className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 text-xs font-semibold rounded-md shadow-xs transition-colors cursor-pointer"
+            >
+              Explore Events
+            </Button>
+          </div>
+        ) : (
+          /* Bookings History Grid */
+          <div className="grid gap-4 sm:grid-cols-2">
+            {bookings.map((booking) => {
+              const statusColors = {
+                SUCCESS: "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20",
+                PENDING: "bg-amber-500/10 text-amber-500 border border-amber-500/20",
+                FAILED: "bg-rose-500/10 text-rose-500 border border-rose-500/20",
+                REFUNDED: "bg-zinc-500/10 text-zinc-500 border border-zinc-500/20",
+              };
 
-            return (
-              <Card key={event.id} className="border border-border bg-card shadow-none rounded-lg flex flex-col justify-between">
-                <CardHeader className="space-y-1.5">
-                  <CardTitle className="text-lg font-semibold tracking-tight leading-snug">{event.eventName}</CardTitle>
-                  <CardDescription className="text-sm font-light text-foreground/70 line-clamp-2">{event.description}</CardDescription>
-                </CardHeader>
-
-                <CardContent className="space-y-4 text-xs font-normal">
-                  <div className="space-y-2 text-foreground/60">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-3.5 w-3.5" />
-                      <span>{new Date(event.dateTime).toLocaleString()}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-3.5 w-3.5" />
-                      <span>{event.location}</span>
-                    </div>
-                  </div>
-
-                  {event.ticketTiers.length > 0 ? (
-                    <div className="space-y-3 pt-3 border-t border-border/40">
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] uppercase font-bold tracking-wider text-foreground/50">Ticket Tier</label>
-                        <select
-                          value={currentBooking?.tierId || ""}
-                          onChange={(e) => handleTierChange(event.id, parseInt(e.target.value, 10))}
-                          className="w-full bg-background border border-border text-foreground text-xs rounded-md px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
-                        >
-                          {event.ticketTiers.map((tier) => (
-                            <option key={tier.id} value={tier.id}>
-                              {tier.tierName} (₹{tier.pricePerSeatExcludingTax} • {tier.availableSeats} left)
-                            </option>
-                          ))}
-                        </select>
+              return (
+                <Card 
+                  key={booking.id} 
+                  className="border border-border bg-card shadow-none rounded-xl flex flex-col justify-between overflow-hidden relative"
+                >
+                  <CardHeader className="p-5 pb-3">
+                    <div className="flex justify-between items-start gap-4">
+                      <div className="space-y-1">
+                        <span className="text-[9px] uppercase tracking-wider font-semibold text-foreground/40">Order #{booking.id}</span>
+                        <CardTitle className="text-base font-bold tracking-tight line-clamp-1 leading-snug">
+                          {booking.event.eventName}
+                        </CardTitle>
+                        <CardDescription className="text-xs font-light text-foreground/60">
+                          {booking.ticketTier.tierName} Pass • Qty: {booking.quantity}
+                        </CardDescription>
                       </div>
 
-                      <div className="flex items-center justify-between gap-4">
-                        <span className="text-[10px] uppercase font-bold tracking-wider text-foreground/50">Quantity</span>
-                        <div className="flex items-center border border-border rounded-md overflow-hidden bg-background">
-                          <button
-                            type="button"
-                            onClick={() => handleQuantityChange(event.id, -1, availableSeats)}
-                            disabled={!currentBooking || currentBooking.quantity <= 1}
-                            className="px-2 py-1 text-xs hover:bg-foreground/5 transition-colors disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed"
-                          >
-                            -
-                          </button>
-                          <span className="px-3 py-1 text-xs font-medium border-x border-border min-w-[2rem] text-center select-none">
-                            {currentBooking?.quantity || 1}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => handleQuantityChange(event.id, 1, availableSeats)}
-                            disabled={!currentBooking || currentBooking.quantity >= availableSeats}
-                            className="px-2 py-1 text-xs hover:bg-foreground/5 transition-colors disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed"
-                          >
-                            +
-                          </button>
-                        </div>
-                      </div>
+                      <span className={`text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-sm shrink-0 ${statusColors[booking.paymentStatus]}`}>
+                        {booking.paymentStatus}
+                      </span>
                     </div>
-                  ) : (
-                    <div className="pt-3 border-t border-border/40 text-center text-xs text-destructive">
-                      No ticket tiers configured.
-                    </div>
-                  )}
-                </CardContent>
+                  </CardHeader>
 
-                <CardFooter className="flex items-center justify-between border-t border-border/40 pt-4 mt-auto">
-                  <div className="flex flex-col">
-                    <span className="text-[10px] text-foreground/50 uppercase tracking-wider font-semibold">Total Price</span>
-                    <span className="text-sm font-semibold tracking-tight">
-                      {selectedTier
-                        ? `₹${(parseFloat(selectedTier.pricePerSeatExcludingTax) * (currentBooking?.quantity || 1)).toFixed(2)}`
-                        : "N/A"}
-                    </span>
-                  </div>
-                  <Button
-                    onClick={() => handleBookTicket(event.id)}
-                    disabled={event.ticketTiers.length === 0 || availableSeats <= 0}
-                    className="h-9 bg-primary text-primary-foreground hover:bg-primary/90 rounded-md px-4 text-xs font-medium shadow-sm transition-colors cursor-pointer disabled:cursor-not-allowed"
-                  >
-                    {availableSeats <= 0 ? "Sold Out" : "Book Access Pass"}
-                  </Button>
-                </CardFooter>
-              </Card>
-            );
-          })}
-        </div>
+                  <CardContent className="px-5 pb-4 space-y-2 text-xs text-foreground/70 font-light border-b border-border/40 bg-foreground/[0.005]">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-3.5 w-3.5 text-foreground/40" />
+                      <span>{new Date(booking.event.dateTime).toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-3.5 w-3.5 text-foreground/40" />
+                      <span className="line-clamp-1">{booking.event.location}</span>
+                    </div>
+                  </CardContent>
+
+                  <CardFooter className="p-4 px-5 flex items-center justify-between mt-auto bg-foreground/[0.01]">
+                    <div className="flex flex-col">
+                      <span className="text-[9px] text-foreground/45 uppercase tracking-wider font-semibold">Total Paid</span>
+                      <span className="text-sm font-bold tracking-tight">₹{parseFloat(booking.totalPricePaid).toFixed(2)}</span>
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      onClick={() => router.push(`/dashboard/tickets/${booking.id}`)}
+                      className="h-8 border-border text-foreground hover:bg-foreground/5 rounded-md px-3 text-xs font-semibold transition-colors gap-1.5 cursor-pointer"
+                    >
+                      View Receipt
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Button>
+                  </CardFooter>
+                </Card>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

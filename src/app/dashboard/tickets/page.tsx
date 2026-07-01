@@ -129,7 +129,11 @@ export default function MyTicketsPage() {
                   <span className="text-[10px] text-foreground/50 uppercase tracking-wider font-semibold">Total Paid</span>
                   <span className="text-sm font-bold tracking-tight">₹{booking.totalPricePaid}</span>
                 </div>
-                <Button variant="outline" className="h-9 border-border text-foreground hover:bg-foreground/5 rounded-md px-4 text-xs font-medium transition-colors gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => router.push(`/dashboard/tickets/${booking.id}`)}
+                  className="h-9 border-border text-foreground hover:bg-foreground/5 rounded-md px-4 text-xs font-medium transition-colors gap-2 cursor-pointer"
+                >
                   <QrCode className="h-4 w-4" />
                   View Pass
                 </Button>
