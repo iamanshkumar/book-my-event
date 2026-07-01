@@ -34,6 +34,8 @@ interface Event {
   dateTime: string;
   duration: string;
   status: string;
+  banner?: string;
+  thumbnail?: string;
   ticketTiers: TicketTier[];
   organizer: {
     id: number;
@@ -329,12 +331,25 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
           {/* LEFT: Main Details Section */}
           <div className="md:col-span-2 space-y-6">
             {/* Banner block */}
-            <div className="h-64 sm:h-96 w-full rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent flex flex-col justify-end p-6 border border-border/40 relative overflow-hidden shadow-xs">
-              <div className="absolute top-4 right-4 bg-background/80 backdrop-blur-md text-[10px] text-primary border border-primary/20 px-2.5 py-1 rounded-sm uppercase tracking-wider font-semibold">
+            <div className="h-64 sm:h-96 w-full rounded-xl flex flex-col justify-end p-6 border border-border/40 relative overflow-hidden shadow-xs">
+              {event.banner ? (
+                <img 
+                  src={event.banner} 
+                  alt={event.eventName} 
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+              ) : (
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent" />
+              )}
+
+              {/* Dark overlay fade to ensure high text contrast and readability */}
+              <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/30 to-transparent z-10" />
+
+              <div className="absolute top-4 right-4 bg-background/80 backdrop-blur-md text-[10px] text-primary border border-primary/20 px-2.5 py-1 rounded-sm uppercase tracking-wider z-20 font-semibold">
                 {event.status}
               </div>
               
-              <div className="space-y-2 z-10">
+              <div className="space-y-2 z-20">
                 <div className="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider text-primary px-2 py-0.5 bg-primary/10 rounded-sm">
                   <Sparkles className="h-3 w-3" />
                   <span>Featured Profile</span>
@@ -343,7 +358,6 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
                   {event.eventName}
                 </h1>
               </div>
-              <div className="absolute inset-0 bg-radial-gradient from-transparent to-background/5 opacity-40 pointer-events-none"></div>
             </div>
 
             {/* Host Details Row */}

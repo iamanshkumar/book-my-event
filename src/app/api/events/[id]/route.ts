@@ -75,7 +75,7 @@ export async function PUT(request : Request , context : RouteContext){
     }
 
     const body = await request.json();
-    const { eventName, description, location, dateTime, duration, ticketTiers } = body;
+    const { eventName, description, location, dateTime, duration, banner, thumbnail, ticketTiers } = body;
 
     const updatedEvent = await prisma.$transaction(async (tx)=>{
         const event = await tx.event.update({
@@ -86,6 +86,8 @@ export async function PUT(request : Request , context : RouteContext){
                 location,
                 dateTime : new Date(dateTime),
                 duration,
+                banner,
+                thumbnail,
             }
         });
 

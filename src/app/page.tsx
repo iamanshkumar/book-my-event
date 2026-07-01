@@ -31,6 +31,8 @@ interface Event {
   dateTime: string;
   duration: string;
   status: string;
+  thumbnail?: string;
+  banner?: string;
   ticketTiers: TicketTier[];
   organizer: {
     name: string;
@@ -372,13 +374,26 @@ export default function Home() {
 
               return (
                 <Card key={event.id} className="border border-border bg-card shadow-none rounded-lg flex flex-col justify-between overflow-hidden group">
-                  {/* Decorative Thumbnail Graphic Header block */}
-                  <div className="h-40 w-full bg-gradient-to-br from-primary/10 via-primary/5 to-transparent flex flex-col items-start justify-between p-4 border-b border-border/40 relative">
-                    <span className="text-[10px] uppercase font-bold tracking-wider text-primary px-2 py-0.5 bg-primary/10 rounded-sm">
+                  {/* Thumbnail Image Header block */}
+                  <div className="h-40 w-full flex flex-col items-start justify-between p-4 border-b border-border/40 relative overflow-hidden">
+                    {event.thumbnail ? (
+                      <img 
+                        src={event.thumbnail} 
+                        alt={event.eventName} 
+                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent" />
+                    )}
+                    
+                    {/* Glassmorphic overlays to ensure text readability */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent z-10" />
+
+                    <span className="text-[9px] uppercase font-bold tracking-widest text-primary px-2.5 py-0.5 bg-background/95 border border-primary/20 rounded-sm z-20 backdrop-blur-md shadow-xs">
                       Upcoming
                     </span>
 
-                    <div className="space-y-0.5 mt-auto">
+                    <div className="space-y-0.5 mt-auto z-20">
                       <span className="text-[9px] uppercase tracking-wider text-foreground/45 font-semibold">Host / Organizer</span>
                       <p className="text-xs font-semibold text-foreground/80">{event.organizer?.name || "Verified Event Host"}</p>
                     </div>

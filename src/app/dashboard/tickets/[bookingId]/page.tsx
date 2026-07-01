@@ -29,6 +29,8 @@ interface Booking {
     dateTime: string;
     location: string;
     duration: string;
+    banner?: string;
+    thumbnail?: string;
   };
   ticketTier: {
     tierName: string;
@@ -200,8 +202,18 @@ export default function TicketDetailsPage({ params }: { params: Promise<{ bookin
       <Card className="border border-border bg-card shadow-xs rounded-xl overflow-hidden print:border-none print:shadow-none">
         
         {/* Ticket Header Banner */}
-        <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-b border-border/40 p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="space-y-1">
+        <div className="border-b border-border/40 p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 relative overflow-hidden">
+          {booking.event.banner ? (
+            <img 
+              src={booking.event.banner} 
+              alt={booking.event.eventName} 
+              className="absolute inset-0 h-full w-full object-cover opacity-15 dark:opacity-20 pointer-events-none"
+            />
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent" />
+          )}
+
+          <div className="space-y-1 z-10">
             <span className="text-[10px] uppercase tracking-wider font-bold text-primary px-2.5 py-0.5 bg-primary/10 rounded-sm inline-flex items-center gap-1">
               <Sparkles className="h-3 w-3" />
               Digital Gate Pass
@@ -210,7 +222,7 @@ export default function TicketDetailsPage({ params }: { params: Promise<{ bookin
             <p className="text-xs text-foreground/50 font-light">Order Reference ID: #{booking.id}</p>
           </div>
 
-          <span className={`text-[10px] uppercase font-bold tracking-wider px-3 py-1 rounded-sm shrink-0 w-fit ${statusColors[booking.paymentStatus]}`}>
+          <span className={`text-[10px] uppercase font-bold tracking-wider px-3 py-1 rounded-sm shrink-0 w-fit z-10 ${statusColors[booking.paymentStatus]}`}>
             {booking.paymentStatus}
           </span>
         </div>
