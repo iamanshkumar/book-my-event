@@ -1,26 +1,51 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* 1. Map Tailwind v4 theme definitions to native CSS variables */
+@theme {
+  --font-sans: var(--font-sans), "Inter", sans-serif;
 
-@theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* 2. LIGHT MODE VALUES (Default Canvas) */
+:root {
+  --background: #FAF9F5;
+  --foreground: #111111;
+  --card: #FFFFFF;
+  --card-foreground: #111111;
+  --primary: #D97757;
+  --primary-foreground: #FFFFFF;
+  --border: #E5E5E5;
+  --input: #c7c6c6;
+  --ring: #111111;
+}
+
+/* 3. DARK MODE VALUE OVERRIDES (Triggers when data-theme="dark" matches) */
+:root[data-theme="dark"] {
+  --background: #0A0A0A;
+  --foreground: #EDEDED;
+  --card: #141414;
+  --card-foreground: #EDEDED;
+  --primary: #D97757;
+  --primary-foreground: #0A0A0A;
+  --border: #262626;
+  --input: #262626;
+  --ring: #FFFFFF;
+}
+
+@layer base {
+  * {
+    @apply border-border;
   }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  body {
+    @apply bg-background text-foreground transition-colors duration-200;
+  }
 }
