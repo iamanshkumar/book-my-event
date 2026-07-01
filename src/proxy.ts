@@ -48,7 +48,19 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const isProtectedRoute = PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
+  let isProtectedRoute = PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
+
+  // Exclude public GET endpoints under /api/events
+  if (pathname.startsWith('/api/events/')) {
+    const isPublicGet = (
+      request.method === 'GET' && 
+      (pathname === '/api/events/list' || pathname === '/api/events/search' || !pathname.includes('/create'))
+    );
+    if (isPublicGet) {
+      isProtectedRoute = false;
+    }
+  }
+
   console.log("[Proxy] Is Protected Route:", isProtectedRoute);
 
   if (!isProtectedRoute) {
