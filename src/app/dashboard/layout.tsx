@@ -49,7 +49,7 @@ export default function AttendeeLayout({children} : {children : React.ReactNode}
     return (
         <div className="h-screen w-full flex bg-background text-foreground transition-colors duration-200 overflow-hidden">
           {/* Sidebar Navigation */}
-          <aside className="w-66 border-r border-border bg-card hidden md:flex flex-col justify-between p-5 select-none shrink-0 h-full">
+          <aside className="w-72 border-r border-border bg-card hidden md:flex flex-col justify-between p-5 select-none shrink-0 h-full">
             <div className="space-y-7">
               {/* Header Branding */}
               <div className="flex items-center gap-2.5 px-2">
