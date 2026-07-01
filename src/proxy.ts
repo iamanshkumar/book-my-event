@@ -2,9 +2,6 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
 
-const JWT_SECRET = process.env.JWT_SECRET;
-const encodedSecret = new TextEncoder().encode(JWT_SECRET);
-
 const AUTH_ROUTES = ['/login', '/register', '/forgot-password'];
 
 const PROTECTED_ROUTES = [
@@ -23,9 +20,15 @@ const PROTECTED_ROUTES = [
 ];
 
 export async function proxy(request: NextRequest) {
+  const JWT_SECRET = process.env.JWT_SECRET;
+  const encodedSecret = new TextEncoder().encode(JWT_SECRET);
+
   const { pathname } = request.nextUrl;
+  console.log("[Proxy] Intercepted path:", pathname);
+
   const sessionToken = request.cookies.get('session_token')?.value;
   const isAuthenticated = !!sessionToken;
+  console.log("[Proxy] Is Authenticated:", isAuthenticated);
 
   if (AUTH_ROUTES.some((route) => pathname.startsWith(route))) {
     if (isAuthenticated) {
@@ -46,6 +49,7 @@ export async function proxy(request: NextRequest) {
   }
 
   const isProtectedRoute = PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
+  console.log("[Proxy] Is Protected Route:", isProtectedRoute);
 
   if (!isProtectedRoute) {
     return NextResponse.next();
@@ -53,14 +57,17 @@ export async function proxy(request: NextRequest) {
 
   if (!sessionToken) {
     if (pathname.startsWith('/api/')) {
+      console.log("[Proxy] Missing token for API path:", pathname);
       return NextResponse.json({ error: 'Authentication token missing.' }, { status: 401 });
     }
+    console.log("[Proxy] Missing token for Page path:", pathname);
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
   try {
     const { payload } = await jwtVerify(sessionToken, encodedSecret);
     const userRole = String(payload.role);
+    console.log("[Proxy] Valid token. User ID:", payload.userId, "Role:", userRole);
 
     if (pathname.startsWith('/admin') && userRole !== 'ADMIN') {
       return NextResponse.redirect(new URL('/unauthorized', request.url));
@@ -78,12 +85,15 @@ export async function proxy(request: NextRequest) {
     requestHeaders.set('x-user-email', String(payload.email));
     requestHeaders.set('x-user-role', userRole);
 
+    console.log("[Proxy] Setting x-user-id header to:", payload.userId);
+
     return NextResponse.next({
       request: {
         headers: requestHeaders,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
+    console.log("[Proxy] JWT verification failed:", error.message);
     if (pathname.startsWith('/api/')) {
       return NextResponse.json({ error: 'Session expired or token invalid.' }, { status: 401 });
     }
@@ -92,8 +102,10 @@ export async function proxy(request: NextRequest) {
     loginResponse.cookies.delete('session_token');
     return loginResponse;
   }
-};
+}
 
 export const config = {
   matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 };
+
+export default proxy;

@@ -51,6 +51,7 @@ export async function POST(request : Request){
 export async function GET(){
     try{
         const headerList = await headers();
+        console.log("[API /api/bookings] Received x-user-id header:", headerList.get("x-user-id"));
         const userId = parseInt(headerList.get("x-user-id") || '0' , 10);
 
         if(!userId){
@@ -65,7 +66,7 @@ export async function GET(){
             where : {userId},
             include : {
                 event : {
-                    select : {eventName: true, dateTime: true, location: true, thumbnail: true}
+                    select : {eventName: true, dateTime: true, location: true, thumbnail: true, duration: true}
                 },
                 ticketTier : {
                     select: { tierName: true, pricePerSeatExcludingTax: true }
