@@ -14,7 +14,9 @@ import {
   Info,
   Calendar,
   Sparkles,
-  DollarSign
+  DollarSign,
+  Upload,
+  X
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -36,6 +38,8 @@ export default function CreateEventPage() {
   const [duration, setDuration] = useState("");
   const [banner, setBanner] = useState("");
   const [thumbnail, setThumbnail] = useState("");
+  const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
+  const [uploadingBanner, setUploadingBanner] = useState(false);
 
   // Ticket Tiers State
   const [ticketTiers, setTicketTiers] = useState<TicketTierInput[]>([]);
@@ -47,6 +51,45 @@ export default function CreateEventPage() {
   const [tierTax, setTierTax] = useState("");
 
   const [loading, setLoading] = useState(false);
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: "thumbnail" | "banner") => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (type === "thumbnail") setUploadingThumbnail(true);
+    else setUploadingBanner(true);
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("type", type);
+
+    try {
+      const res = await fetch("/api/events/upload", {
+        method: "POST",
+        body: formData
+      });
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || "Upload failed");
+      }
+
+      if (type === "thumbnail") {
+        setThumbnail(data.url);
+        toast.success("Thumbnail uploaded successfully!");
+      } else {
+        setBanner(data.url);
+        toast.success("Banner uploaded successfully!");
+      }
+    } catch (err: any) {
+      toast.error("Upload failed", {
+        description: err.message
+      });
+    } finally {
+      if (type === "thumbnail") setUploadingThumbnail(false);
+      else setUploadingBanner(false);
+    }
+  };
 
   // Add a ticket tier dynamically
   const handleAddTier = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -266,29 +309,76 @@ export default function CreateEventPage() {
                 />
               </div>
 
-              {/* Banner & Thumbnail Visual Links */}
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-1.5">
-                  <Label htmlFor="thumbnail" className="text-xs font-semibold text-foreground/80 font-medium">Thumbnail Image URL</Label>
-                  <Input
-                    id="thumbnail"
-                    type="url"
-                    placeholder="https://example.com/thumbnail.png"
-                    value={thumbnail}
-                    onChange={(e) => setThumbnail(e.target.value)}
-                    className="h-10 bg-transparent border-border rounded-md px-3 shadow-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:border-ring transition-all placeholder:text-foreground/30 text-card-foreground text-sm"
-                  />
+              {/* Banner & Thumbnail File Uploads */}
+              <div className="grid gap-6 sm:grid-cols-2">
+                {/* Thumbnail Upload */}
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold text-foreground/80">Event Thumbnail (Optional)</Label>
+                  {thumbnail ? (
+                    <div className="relative h-40 w-full rounded-lg overflow-hidden border border-border group">
+                      <img src={thumbnail} alt="Thumbnail preview" className="h-full w-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setThumbnail("")}
+                        className="absolute top-2 right-2 bg-background/80 hover:bg-background text-foreground/80 hover:text-foreground p-1.5 rounded-full border border-border transition-all cursor-pointer z-10"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="border border-dashed border-border/80 hover:border-primary/50 rounded-lg h-40 flex flex-col items-center justify-center p-4 text-center cursor-pointer transition-colors relative hover:bg-foreground/[0.005]">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleUpload(e, "thumbnail")}
+                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                      />
+                      {uploadingThumbnail ? (
+                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                      ) : (
+                        <>
+                          <Upload className="h-6 w-6 text-foreground/45 mb-2" />
+                          <span className="text-xs font-medium text-foreground/80">Upload Thumbnail</span>
+                          <span className="text-[10px] text-foreground/45 mt-1">Drag and drop or click to browse</span>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="banner" className="text-xs font-semibold text-foreground/80 font-medium">Banner Image URL</Label>
-                  <Input
-                    id="banner"
-                    type="url"
-                    placeholder="https://example.com/banner.png"
-                    value={banner}
-                    onChange={(e) => setBanner(e.target.value)}
-                    className="h-10 bg-transparent border-border rounded-md px-3 shadow-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:border-ring transition-all placeholder:text-foreground/30 text-card-foreground text-sm"
-                  />
+
+                {/* Banner Upload */}
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold text-foreground/80">Event Banner (Optional)</Label>
+                  {banner ? (
+                    <div className="relative h-40 w-full rounded-lg overflow-hidden border border-border group">
+                      <img src={banner} alt="Banner preview" className="h-full w-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setBanner("")}
+                        className="absolute top-2 right-2 bg-background/80 hover:bg-background text-foreground/80 hover:text-foreground p-1.5 rounded-full border border-border transition-all cursor-pointer z-10"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="border border-dashed border-border/80 hover:border-primary/50 rounded-lg h-40 flex flex-col items-center justify-center p-4 text-center cursor-pointer transition-colors relative hover:bg-foreground/[0.005]">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleUpload(e, "banner")}
+                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                      />
+                      {uploadingBanner ? (
+                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                      ) : (
+                        <>
+                          <Upload className="h-6 w-6 text-foreground/45 mb-2" />
+                          <span className="text-xs font-medium text-foreground/80">Upload Banner</span>
+                          <span className="text-[10px] text-foreground/45 mt-1">Drag and drop or click to browse</span>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </CardContent>

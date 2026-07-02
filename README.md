@@ -111,6 +111,7 @@ Open [http://localhost:3000](http://localhost:3000) in your web browser to acces
 - `POST /api/events/create` - Schedule a new event with multiple ticket tiers (requires ORGANIZER role privilege).
 - `PUT /api/events/[id]` - Modify event specifications and rebuild ticket structures (requires hosting ORGANIZER owner check).
 - `DELETE /api/events/[id]` - Drop owned event listing from active catalogs (requires hosting ORGANIZER owner check).
+- `POST /api/events/upload` - Upload thumbnail or banner images to server storage directories (requires authenticated session).
 
 ### 4. Booking & Payments
 - `GET /api/bookings` - Retrieve active purchase ledger history for logged-in CUSTOMER profiles.
