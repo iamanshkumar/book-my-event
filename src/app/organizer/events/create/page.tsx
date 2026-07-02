@@ -38,6 +38,7 @@ export default function CreateEventPage() {
   const [duration, setDuration] = useState("");
   const [banner, setBanner] = useState("");
   const [thumbnail, setThumbnail] = useState("");
+  const [trailerUrl, setTrailerUrl] = useState("");
   const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
 
@@ -184,6 +185,7 @@ export default function CreateEventPage() {
           duration,
           banner: banner || undefined,
           thumbnail: thumbnail || undefined,
+          trailerUrl: trailerUrl || undefined,
           ticketTiers
         })
       });
@@ -380,6 +382,19 @@ export default function CreateEventPage() {
                     </div>
                   )}
                 </div>
+              </div>
+
+              {/* Event Teaser/Trailer URL */}
+              <div className="space-y-1.5 pt-2">
+                <Label htmlFor="trailerUrl" className="text-xs font-semibold text-foreground/80 font-medium">Event Teaser / Trailer URL (Optional)</Label>
+                <Input
+                  id="trailerUrl"
+                  type="url"
+                  placeholder="e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                  value={trailerUrl}
+                  onChange={(e) => setTrailerUrl(e.target.value)}
+                  className="h-10 bg-transparent border-border rounded-md px-3 shadow-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:border-ring transition-all placeholder:text-foreground/30 text-card-foreground text-sm"
+                />
               </div>
             </CardContent>
           </Card>

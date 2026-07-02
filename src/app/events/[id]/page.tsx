@@ -36,6 +36,7 @@ interface Event {
   status: string;
   banner?: string;
   thumbnail?: string;
+  trailerUrl?: string;
   ticketTiers: TicketTier[];
   organizer: {
     id: number;
@@ -61,6 +62,34 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
   const [selectedTierId, setSelectedTierId] = useState<number | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [bookingInProgress, setBookingInProgress] = useState(false);
+
+  const getVideoSource = (url?: string) => {
+    if (!url) return null;
+
+    // 1. YouTube Match
+    const ytReg = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const ytMatch = url.match(ytReg);
+    if (ytMatch && ytMatch[2].length === 11) {
+      return { type: "embed", url: `https://www.youtube.com/embed/${ytMatch[2]}` };
+    }
+
+    // 2. Instagram Match (post, reel, tv)
+    const igReg = /(?:instagram\.com)\/(?:p|reel|tv)\/([a-zA-Z0-9_-]+)/;
+    const igMatch = url.match(igReg);
+    if (igMatch && igMatch[1]) {
+      return { type: "embed", url: `https://www.instagram.com/reel/${igMatch[1]}/embed/` };
+    }
+
+    // 3. Vimeo Match
+    const vimeoReg = /(?:vimeo\.com)\/([0-9]+)/;
+    const vimeoMatch = url.match(vimeoReg);
+    if (vimeoMatch && vimeoMatch[1]) {
+      return { type: "embed", url: `https://player.vimeo.com/video/${vimeoMatch[1]}` };
+    }
+
+    // 4. Default direct video file
+    return { type: "direct", url };
+  };
 
   // 1. Check user authentication state client-side
   useEffect(() => {
@@ -379,6 +408,35 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
                 {event.description || "No description has been added for this event listing. Keep tabs for further details."}
               </p>
             </div>
+
+            {/* Teaser & Trailer Section */}
+            {event.trailerUrl && (() => {
+              const video = getVideoSource(event.trailerUrl);
+              if (!video) return null;
+              return (
+                <div className="space-y-3 bg-card border border-border p-6 rounded-xl shadow-xs">
+                  <h3 className="text-lg font-bold tracking-tight border-b border-border/40 pb-2.5">Event Teaser & Trailer</h3>
+                  <div className="overflow-hidden rounded-xl border border-border/40 bg-black aspect-video relative shadow-xs">
+                    {video.type === "embed" ? (
+                      <iframe
+                        src={video.url}
+                        title="Event Teaser Trailer"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        className="w-full h-full border-0 absolute inset-0"
+                      />
+                    ) : (
+                      <video
+                        src={video.url}
+                        controls
+                        preload="metadata"
+                        className="w-full h-full object-contain"
+                      />
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
           {/* RIGHT: Booking Action Panel */}
