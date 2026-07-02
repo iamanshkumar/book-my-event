@@ -13,22 +13,29 @@ The application features a granular role-based access control system supporting 
 - Sort listings by proximity, creation date, or ticket price thresholds.
 - Dynamic ticket tier selection displaying seating availability, pricing summaries, and tax breakdowns.
 - Secure, authenticated booking process for client reservation checkouts.
+- Responsive teaser media player on checkout screens supporting YouTube, Instagram Reels, Vimeo, and raw HTML5 video files.
 
-### 2. Attendee Workspace (Customer Portal)
+### 2. Onboarding & Workspace Access
+- Separated registration flows for Attendees (`/register`) and Organizers (`/register/organizer`) to secure default privileges.
+- Unified "Back to Home" navigation links positioned consistently across all authentication and password-reset layouts.
+- Credentials toggle visibility switches for password entry forms.
+
+### 3. Attendee Workspace (Customer Portal)
 - Comprehensive bookings transaction ledger displaying order history.
 - Dynamic profile information management for email and name details.
 - Secure credential management featuring change-password settings with visibility toggle buttons.
 - Printable digital gate passes containing reference IDs, breakdowns of fees, and verification QR code mockups.
 - Interactive booking cancellation action releasing seats back into active inventory pools.
 
-### 3. Organizer Workspace
+### 4. Organizer Workspace
 - Analytics dashboard presenting total revenue summaries, global ticket sales counts, event publishing stats, and fill-rate loaders.
 - Managed event catalog containing listings, schedule details, locations, and configured ticket tiers.
+- Drag-and-drop/select-file local upload widget for event banners and thumbnails, storing media securely on server storage.
 - Scheduling Wizard allowing organizers to configure ticket tiers with custom seat capacities, price configurations, and tax rates.
-- Editor panel providing specification updates and ticket configuration alterations.
+- Editor panel providing specification updates, trailer video URL configs, and ticket configuration alterations.
 - Registration log ledger representing booking history, attendee details, seat counts, and status tracking.
 
-### 4. Administrative Control Panel
+### 5. Administrative Control Panel
 - Global overview statistics dashboard capturing system-wide platform revenues, registered users, active listings, and ticket sales.
 - Diagnostic logs and quick action widgets navigating to control modules.
 - User management panel filtering profiles and executing role privileges (CUSTOMER, ORGANIZER, ADMIN).
@@ -50,15 +57,23 @@ The application features a granular role-based access control system supporting 
 ### Prerequisites
 
 - Node.js (version 18 or higher recommended)
+- Docker and Docker Compose (optional for local database container service)
 - MySQL database instance
 
 ### Environment Configuration
 
-Create a `.env` file in the root directory of the project and define the following variables:
+Create a `.env` file in the root directory of the project and define the configuration variables:
 
 ```env
-DATABASE_URL="mysql://username:password@localhost:3306/book_my_event"
+DATABASE_URL="mysql://book_my_event_user:userpassword@localhost:3306/book_my_event_db"
 JWT_SECRET="your-jwt-secure-string"
+RESEND_API_KEY="your-resend-key-if-using-email-features"
+
+# Local MySQL Docker configuration parameters
+MYSQL_ROOT_PASSWORD="rootpassword"
+MYSQL_DATABASE="book_my_event_db"
+MYSQL_USER="book_my_event_user"
+MYSQL_PASSWORD="userpassword"
 ```
 
 ### Installation & Database Setup
@@ -68,12 +83,17 @@ JWT_SECRET="your-jwt-secure-string"
    npm install
    ```
 
-2. Execute database schema migrations using Prisma:
+2. Boot the local database container via Docker Compose:
+   ```bash
+   docker compose up -d
+   ```
+
+3. Execute database schema migrations using Prisma:
    ```bash
    npx prisma migrate dev
    ```
 
-3. Populate database seeds (optional):
+4. Populate database seeds (optional):
    ```bash
    npm run seed
    ```
