@@ -10,7 +10,7 @@ import { Loader2, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
-export default function RegisterPage() {
+export default function OrganizerRegisterPage() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -26,7 +26,7 @@ export default function RegisterPage() {
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, role: "CUSTOMER" })
+        body: JSON.stringify({ name, email, password, role: "ORGANIZER" })
       });
 
       const data = await response.json();
@@ -35,7 +35,7 @@ export default function RegisterPage() {
         throw new Error(data.error || "Registration failed. Please try again.");
       }
 
-      toast.success("Account created successfully!", {
+      toast.success("Organizer account created!", {
         description: "Redirecting you to the login panel...",
       });
 
@@ -69,10 +69,10 @@ export default function RegisterPage() {
       <Card className="w-full max-w-sm border border-border bg-card p-2 rounded-lg shadow-sm">
         <CardHeader className="space-y-1.5 text-center pt-6">
           <CardTitle className="text-2xl font-semibold tracking-tight text-card-foreground">
-            Attendee Registration
+            Organizer Registration
           </CardTitle>
           <CardDescription className="text-sm text-foreground/60">
-            Sign up to discover live experiences and book gate passes
+            Create a host profile to schedule events and manage seating configurations
           </CardDescription>
         </CardHeader>
         
@@ -81,12 +81,12 @@ export default function RegisterPage() {
             {/* Full Name Input */}
             <div className="space-y-1.5">
               <Label htmlFor="name" className="text-xs font-medium text-foreground/80">
-                Full Name
+                Organizer / Company Name
               </Label>
               <Input
                 id="name"
                 type="text"
-                placeholder="John Doe"
+                placeholder="e.g. Acme Events Corp"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
@@ -102,7 +102,7 @@ export default function RegisterPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="name@example.com"
+                placeholder="host@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -149,10 +149,10 @@ export default function RegisterPage() {
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating account...
+                  Creating host account...
                 </>
               ) : (
-                "Get Started"
+                "Register"
               )}
             </Button>
             
@@ -169,14 +169,14 @@ export default function RegisterPage() {
                 </Button>
               </div>
               <div className="pt-2 border-t border-border/40">
-                Are you hosting events?{" "}
+                Looking to buy tickets?{" "}
                 <Button 
                   variant="link" 
                   type="button"
-                  onClick={() => router.push("/register/organizer")}
+                  onClick={() => router.push("/register")}
                   className="p-0 text-xs text-primary font-semibold h-auto py-0 hover:underline"
                 >
-                  Register as Organizer
+                  Register as Attendee
                 </Button>
               </div>
             </div>
