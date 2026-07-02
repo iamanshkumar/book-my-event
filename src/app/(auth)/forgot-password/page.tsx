@@ -57,7 +57,17 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-background px-4 font-sans selection:bg-black selection:text-white">
+    <div className="min-h-screen w-full flex items-center justify-center bg-background px-4 font-sans selection:bg-black selection:text-white relative">
+      <div className="absolute top-6 left-6">
+        <Button
+          variant="ghost"
+          onClick={() => router.push("/")}
+          className="flex items-center gap-2 text-xs font-semibold text-foreground/60 hover:text-foreground hover:bg-foreground/5 h-9 px-3 rounded-md transition-all cursor-pointer"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Home
+        </Button>
+      </div>
       <div className="absolute top-6 right-6">
         <ThemeToggle />
       </div>

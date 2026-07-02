@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2 , Eye , EyeOff} from "lucide-react";
+import { Loader2 , Eye , EyeOff, ArrowLeft} from "lucide-react";
 import {toast} from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -54,7 +54,17 @@ export default function RegisterPage(){
     }
 
     return (
-        <div className="min-h-screen w-full flex items-center justify-center bg-background px-4 font-sans selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
+        <div className="min-h-screen w-full flex items-center justify-center bg-background px-4 font-sans selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black relative">
+            <div className="absolute top-6 left-6">
+                <Button
+                    variant="ghost"
+                    onClick={() => router.push("/")}
+                    className="flex items-center gap-2 text-xs font-semibold text-foreground/60 hover:text-foreground hover:bg-foreground/5 h-9 px-3 rounded-md transition-all cursor-pointer"
+                >
+                    <ArrowLeft className="h-4 w-4" />
+                    Back to Home
+                </Button>
+            </div>
             <div className="absolute top-6 right-6">
                             <ThemeToggle />
             </div>
