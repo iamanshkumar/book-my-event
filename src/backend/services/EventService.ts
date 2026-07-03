@@ -16,7 +16,7 @@ interface CreateEventInput{
     duration : string;
     banner? : string;
     thumbnail? : string;
-    trailerUrl? : string;
+    trailerUrls? : string[];
     ticketTiers : TicketTierInput[];
 }
 
@@ -33,7 +33,7 @@ export class EventService {
                     duration : input.duration,
                     banner : input.banner ?? null,
                     thumbnail : input.thumbnail ?? null,
-                    trailerUrl : input.trailerUrl ?? null,
+                    trailerUrls : input.trailerUrls ?? undefined,
                     status : "PUBLISHED",
                 }
             });

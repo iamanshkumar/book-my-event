@@ -41,7 +41,8 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
   const [duration, setDuration] = useState("");
   const [banner, setBanner] = useState("");
   const [thumbnail, setThumbnail] = useState("");
-  const [trailerUrl, setTrailerUrl] = useState("");
+  const [trailerUrls, setTrailerUrls] = useState<string[]>([]);
+  const [newTrailerUrl, setNewTrailerUrl] = useState("");
   const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
 
@@ -115,7 +116,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
         setDuration(ev.duration || "");
         setBanner(ev.banner || "");
         setThumbnail(ev.thumbnail || "");
-        setTrailerUrl(ev.trailerUrl || "");
+        setTrailerUrls((ev.trailerUrls as string[]) || []);
 
         // Format date string correctly for <input type="datetime-local">
         if (ev.dateTime) {
@@ -241,7 +242,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
           duration,
           banner: banner || null,
           thumbnail: thumbnail || null,
-          trailerUrl: trailerUrl || null,
+          trailerUrls: trailerUrls.length > 0 ? trailerUrls : null,
           ticketTiers: ticketTiers.map((tier) => ({
             tierName: tier.tierName,
             totalSeats: tier.totalSeats,
@@ -475,17 +476,54 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                 </div>
               </div>
 
-              {/* Event Teaser/Trailer URL */}
-              <div className="space-y-1.5 pt-2">
-                <Label htmlFor="trailerUrl" className="text-xs font-semibold text-foreground/80 font-medium">Event Teaser / Trailer URL (Optional)</Label>
-                <Input
-                  id="trailerUrl"
-                  type="url"
-                  placeholder="e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-                  value={trailerUrl}
-                  onChange={(e) => setTrailerUrl(e.target.value)}
-                  className="h-10 bg-transparent border-border rounded-md px-3 shadow-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:border-ring transition-all placeholder:text-foreground/30 text-card-foreground text-sm"
-                />
+              {/* Event Teasers/Trailers URL List */}
+              <div className="space-y-3 pt-2">
+                <Label className="text-xs font-semibold text-foreground/80">Event Teaser & Trailer Videos (Optional)</Label>
+                
+                {/* Dynamic list of added trailers */}
+                {trailerUrls.length > 0 && (
+                  <div className="space-y-2">
+                    {trailerUrls.map((url, index) => (
+                      <div key={index} className="flex items-center justify-between bg-background border border-border/45 p-2 rounded-lg text-xs gap-3">
+                        <span className="truncate text-foreground/80 flex-1">{url}</span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          onClick={() => setTrailerUrls((prev) => prev.filter((_, i) => i !== index))}
+                          className="h-7 w-7 text-destructive hover:bg-destructive/10 hover:text-destructive p-0 cursor-pointer shrink-0 rounded-md"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Add new trailer link form */}
+                <div className="flex gap-2">
+                  <Input
+                    type="url"
+                    placeholder="e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                    value={newTrailerUrl}
+                    onChange={(e) => setNewTrailerUrl(e.target.value)}
+                    className="h-10 bg-transparent border-border rounded-md px-3 shadow-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:border-ring transition-all placeholder:text-foreground/30 text-card-foreground text-sm flex-1"
+                  />
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      if (newTrailerUrl.trim()) {
+                        setTrailerUrls((prev) => [...prev, newTrailerUrl.trim()]);
+                        setNewTrailerUrl("");
+                        toast.success("Teaser link added!");
+                      } else {
+                        toast.error("Please enter a valid URL.");
+                      }
+                    }}
+                    className="h-10 px-4 bg-primary text-primary-foreground hover:bg-primary/90 font-medium rounded-md text-sm transition-colors cursor-pointer"
+                  >
+                    Add Link
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>

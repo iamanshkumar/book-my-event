@@ -36,7 +36,7 @@ interface Event {
   status: string;
   banner?: string;
   thumbnail?: string;
-  trailerUrl?: string;
+  trailerUrls?: string[];
   ticketTiers: TicketTier[];
   organizer: {
     id: number;
@@ -62,6 +62,7 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
   const [selectedTierId, setSelectedTierId] = useState<number | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [bookingInProgress, setBookingInProgress] = useState(false);
+  const [activeTrailerIndex, setActiveTrailerIndex] = useState(0);
 
   const getVideoSource = (url?: string) => {
     if (!url) return null;
@@ -410,17 +411,18 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
             </div>
 
             {/* Teaser & Trailer Section */}
-            {event.trailerUrl && (() => {
-              const video = getVideoSource(event.trailerUrl);
+            {event.trailerUrls && event.trailerUrls.length > 0 && (() => {
+              const activeUrl = event.trailerUrls[activeTrailerIndex];
+              const video = getVideoSource(activeUrl);
               if (!video) return null;
               return (
                 <div className="space-y-3 bg-card border border-border p-6 rounded-xl shadow-xs">
-                  <h3 className="text-lg font-bold tracking-tight border-b border-border/40 pb-2.5">Event Teaser & Trailer</h3>
+                  <h3 className="text-lg font-bold tracking-tight border-b border-border/40 pb-2.5">Event Teasers & Trailers</h3>
                   <div className="overflow-hidden rounded-xl border border-border/40 bg-black aspect-video relative shadow-xs">
                     {video.type === "embed" ? (
                       <iframe
                         src={video.url}
-                        title="Event Teaser Trailer"
+                        title={`Event Teaser Trailer ${activeTrailerIndex + 1}`}
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowFullScreen
                         className="w-full h-full border-0 absolute inset-0"
@@ -434,6 +436,26 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
                       />
                     )}
                   </div>
+
+                  {/* Dynamic selection tabs below player */}
+                  {event.trailerUrls.length > 1 && (
+                    <div className="flex gap-2 overflow-x-auto pb-1 mt-2 scrollbar-none select-none">
+                      {event.trailerUrls.map((_, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          onClick={() => setActiveTrailerIndex(index)}
+                          className={`px-3 py-1.5 rounded-lg text-[10px] font-semibold uppercase tracking-wider border transition-all cursor-pointer ${
+                            activeTrailerIndex === index
+                              ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                              : "bg-background hover:bg-foreground/[0.03] text-foreground/60 hover:text-foreground border-border/80"
+                          }`}
+                        >
+                          Teaser {index + 1}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               );
             })()}
