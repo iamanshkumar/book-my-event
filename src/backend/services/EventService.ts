@@ -1,4 +1,5 @@
-import {prisma} from "../lib/prisma";
+import { EventCategory } from "@prisma/client";
+import { prisma } from "../lib/prisma";
 
 interface TicketTierInput{
     name : string;
@@ -17,6 +18,7 @@ interface CreateEventInput{
     banner? : string;
     thumbnail? : string;
     trailerUrls? : string[];
+    category? : EventCategory;
     ticketTiers : TicketTierInput[];
 }
 
@@ -34,6 +36,7 @@ export class EventService {
                     banner : input.banner ?? null,
                     thumbnail : input.thumbnail ?? null,
                     trailerUrls : input.trailerUrls ?? undefined,
+                    category : input.category ?? undefined,
                     status : "PUBLISHED",
                 }
             });

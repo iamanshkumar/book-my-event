@@ -8,6 +8,7 @@ export async function GET(request : Request){
         const location = searchParams.get('location');
         const startDate = searchParams.get('startDate');
         const endDate = searchParams.get('endDate');
+        const category = searchParams.get('category');
 
         const queryConditions: any = {
             status: 'PUBLISHED' 
@@ -19,6 +20,10 @@ export async function GET(request : Request){
 
         if(location){
             queryConditions.location = { contains: location };
+        }
+
+        if(category && category !== 'ALL' && category !== 'all'){
+            queryConditions.category = category;
         }
 
         if(startDate || endDate){

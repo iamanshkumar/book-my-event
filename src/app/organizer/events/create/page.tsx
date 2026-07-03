@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { 
   ArrowLeft, 
@@ -40,6 +41,7 @@ export default function CreateEventPage() {
   const [thumbnail, setThumbnail] = useState("");
   const [trailerUrls, setTrailerUrls] = useState<string[]>([]);
   const [newTrailerUrl, setNewTrailerUrl] = useState("");
+  const [category, setCategory] = useState("OTHER");
   const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
 
@@ -187,6 +189,7 @@ export default function CreateEventPage() {
           banner: banner || undefined,
           thumbnail: thumbnail || undefined,
           trailerUrls: trailerUrls.length > 0 ? trailerUrls : undefined,
+          category,
           ticketTiers
         })
       });
@@ -298,6 +301,27 @@ export default function CreateEventPage() {
                   required
                   className="h-10 bg-transparent border-border rounded-md px-3 shadow-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:border-ring transition-all placeholder:text-foreground/30 text-card-foreground text-sm"
                 />
+              </div>
+
+              {/* Event Category Select Dropdown */}
+              <div className="space-y-1.5">
+                <Label htmlFor="category" className="text-xs font-semibold text-foreground/80">Event Category</Label>
+                <Select value={category} onValueChange={setCategory}>
+                  <SelectTrigger className="w-full h-10 bg-transparent border-border text-sm text-card-foreground focus:ring-1 focus:ring-ring">
+                    <SelectValue placeholder="Select event category" />
+                  </SelectTrigger>
+                  <SelectContent className="border-border bg-card text-card-foreground">
+                    <SelectItem value="TECH">Tech Events</SelectItem>
+                    <SelectItem value="MUSIC">Music & Concerts</SelectItem>
+                    <SelectItem value="SPORTS">Sports & Fitness</SelectItem>
+                    <SelectItem value="COMEDY">Comedy Shows</SelectItem>
+                    <SelectItem value="MOVIES">Movies & Cinema</SelectItem>
+                    <SelectItem value="ARTS_THEATER">Arts & Theater</SelectItem>
+                    <SelectItem value="BUSINESS">Business & Networking</SelectItem>
+                    <SelectItem value="FOOD_DRINK">Food & Drink</SelectItem>
+                    <SelectItem value="OTHER">Other / Miscellaneous</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Description */}

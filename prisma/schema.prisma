@@ -38,12 +38,13 @@ model Event {
   description String?     @db.VarChar(1000)
   location    String      @db.VarChar(255)
   dateTime    DateTime    @map("date_time")
-  duration    String      @db.VarChar(50)
-  thumbnail   String?     @db.VarChar(500)
-  banner      String?     @db.VarChar(500)
-  trailerUrls Json?       @map("trailer_urls")
-  status      EventStatus @default(DRAFT)
-  createdAt   DateTime    @default(now()) @map("created_at")
+  duration    String        @db.VarChar(50)
+  thumbnail   String?       @db.VarChar(500)
+  banner      String?       @db.VarChar(500)
+  trailerUrls Json?         @map("trailer_urls")
+  category    EventCategory @default(OTHER)
+  status      EventStatus   @default(DRAFT)
+  createdAt   DateTime      @default(now()) @map("created_at")
 
   organizer   User         @relation(fields: [organizerId], references: [id], onDelete: Cascade)
   ticketTiers TicketTier[]
@@ -57,6 +58,18 @@ enum EventStatus {
   PUBLISHED
   CANCELLED
   COMPLETED
+}
+
+enum EventCategory {
+  TECH
+  MUSIC
+  SPORTS
+  COMEDY
+  MOVIES
+  ARTS_THEATER
+  BUSINESS
+  FOOD_DRINK
+  OTHER
 }
 
 model TicketTier {

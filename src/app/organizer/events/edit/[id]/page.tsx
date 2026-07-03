@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   ArrowLeft, 
   Loader2, 
@@ -43,6 +44,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
   const [thumbnail, setThumbnail] = useState("");
   const [trailerUrls, setTrailerUrls] = useState<string[]>([]);
   const [newTrailerUrl, setNewTrailerUrl] = useState("");
+  const [category, setCategory] = useState("OTHER");
   const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
 
@@ -117,6 +119,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
         setBanner(ev.banner || "");
         setThumbnail(ev.thumbnail || "");
         setTrailerUrls((ev.trailerUrls as string[]) || []);
+        setCategory(ev.category || "OTHER");
 
         // Format date string correctly for <input type="datetime-local">
         if (ev.dateTime) {
@@ -243,6 +246,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
           banner: banner || null,
           thumbnail: thumbnail || null,
           trailerUrls: trailerUrls.length > 0 ? trailerUrls : null,
+          category,
           ticketTiers: ticketTiers.map((tier) => ({
             tierName: tier.tierName,
             totalSeats: tier.totalSeats,
@@ -389,6 +393,27 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                   required
                   className="h-10 bg-transparent border-border rounded-md px-3 shadow-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:border-ring transition-all placeholder:text-foreground/30 text-card-foreground text-sm"
                 />
+              </div>
+
+              {/* Event Category Select Dropdown */}
+              <div className="space-y-1.5">
+                <Label htmlFor="category" className="text-xs font-semibold text-foreground/80">Event Category</Label>
+                <Select value={category} onValueChange={setCategory}>
+                  <SelectTrigger className="w-full h-10 bg-transparent border-border text-sm text-card-foreground focus:ring-1 focus:ring-ring">
+                    <SelectValue placeholder="Select event category" />
+                  </SelectTrigger>
+                  <SelectContent className="border-border bg-card text-card-foreground">
+                    <SelectItem value="TECH">Tech Events</SelectItem>
+                    <SelectItem value="MUSIC">Music & Concerts</SelectItem>
+                    <SelectItem value="SPORTS">Sports & Fitness</SelectItem>
+                    <SelectItem value="COMEDY">Comedy Shows</SelectItem>
+                    <SelectItem value="MOVIES">Movies & Cinema</SelectItem>
+                    <SelectItem value="ARTS_THEATER">Arts & Theater</SelectItem>
+                    <SelectItem value="BUSINESS">Business & Networking</SelectItem>
+                    <SelectItem value="FOOD_DRINK">Food & Drink</SelectItem>
+                    <SelectItem value="OTHER">Other / Miscellaneous</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Description */}

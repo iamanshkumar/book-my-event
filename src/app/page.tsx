@@ -13,7 +13,16 @@ import {
   ArrowRight,
   Clock,
   Ticket,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Laptop,
+  Music as MusicIcon,
+  Trophy,
+  Film,
+  Smile,
+  Briefcase,
+  Paintbrush,
+  Utensils,
+  Compass
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -33,12 +42,24 @@ interface Event {
   status: string;
   thumbnail?: string;
   banner?: string;
+  category?: string;
   ticketTiers: TicketTier[];
   organizer: {
     name: string;
   };
 }
 
+const categoriesList = [
+  { id: "ALL", label: "All Events", icon: Compass },
+  { id: "TECH", label: "Tech Events", icon: Laptop },
+  { id: "MUSIC", label: "Music & Concerts", icon: MusicIcon },
+  { id: "SPORTS", label: "Sports & Fitness", icon: Trophy },
+  { id: "MOVIES", label: "Movies & Cinema", icon: Film },
+  { id: "COMEDY", label: "Comedy Shows", icon: Smile },
+  { id: "BUSINESS", label: "Business & Networking", icon: Briefcase },
+  { id: "ARTS_THEATER", label: "Arts & Theater", icon: Paintbrush },
+  { id: "FOOD_DRINK", label: "Food & Drink", icon: Utensils }
+];
 
 export default function Home() {
   const router = useRouter();
@@ -52,6 +73,7 @@ export default function Home() {
   const [locationTerm, setLocationTerm] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("ALL");
   const [sortBy, setSortBy] = useState("soonest"); // "soonest", "latest", "price-low", "price-high"
 
   // Events Feed State
@@ -77,7 +99,7 @@ export default function Home() {
   }, []);
 
   // Fetch Events based on search criteria
-  const handleSearch = async (e?: React.FormEvent) => {
+  const handleSearch = async (e?: React.FormEvent, catOverride?: string) => {
     if (e) e.preventDefault();
     setLoading(true);
 
@@ -87,6 +109,9 @@ export default function Home() {
       if (locationTerm) params.append("location", locationTerm);
       if (startDate) params.append("startDate", startDate);
       if (endDate) params.append("endDate", endDate);
+      
+      const activeCat = catOverride !== undefined ? catOverride : selectedCategory;
+      if (activeCat && activeCat !== "ALL") params.append("category", activeCat);
 
       const response = await fetch(`/api/events/search?${params.toString()}`);
       const data = await response.json();
@@ -314,6 +339,35 @@ export default function Home() {
             </div>
           </div>
         </div>
+
+        {/* Category Filter Pills Bar */}
+        <div 
+          className="flex gap-2.5 overflow-x-auto pt-5 mt-1 pb-1 select-none"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
+          {categoriesList.map((cat) => {
+            const IconComp = cat.icon;
+            const isSelected = selectedCategory === cat.id;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => {
+                  setSelectedCategory(cat.id);
+                  handleSearch(undefined, cat.id);
+                }}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-semibold border transition-all cursor-pointer whitespace-nowrap ${
+                  isSelected
+                    ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                    : "bg-card hover:bg-foreground/[0.02] text-foreground/70 hover:text-foreground border-border"
+                }`}
+              >
+                <IconComp className="h-3.5 w-3.5" />
+                {cat.label}
+              </button>
+            );
+          })}
+        </div>
       </section>
 
       {/* 4. Events Catalog Grid Feed */}
@@ -358,7 +412,8 @@ export default function Home() {
                 setLocationTerm("");
                 setStartDate("");
                 setEndDate("");
-                handleSearch();
+                setSelectedCategory("ALL");
+                handleSearch(undefined, "ALL");
               }}
               className="mt-2 text-xs border-border h-9"
             >
@@ -390,9 +445,16 @@ export default function Home() {
                     {/* Glassmorphic overlays to ensure text readability */}
                     <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent z-10" />
 
-                    <span className="text-[9px] uppercase font-bold tracking-widest text-primary px-2.5 py-0.5 bg-background/95 border border-primary/20 rounded-sm z-20 backdrop-blur-md shadow-xs">
-                      Upcoming
-                    </span>
+                    <div className="flex gap-1.5 z-20">
+                      <span className="text-[9px] uppercase font-bold tracking-widest text-primary px-2.5 py-0.5 bg-background/95 border border-primary/20 rounded-sm backdrop-blur-md shadow-xs">
+                        Upcoming
+                      </span>
+                      {event.category && (
+                        <span className="text-[9px] uppercase font-bold tracking-widest text-foreground/65 px-2 py-0.5 bg-background/95 border border-border/80 rounded-sm backdrop-blur-md shadow-xs">
+                          {event.category.replace("_", " ")}
+                        </span>
+                      )}
+                    </div>
 
                     <div className="space-y-0.5 mt-auto z-20">
                       <span className="text-[9px] uppercase tracking-wider text-foreground/45 font-semibold">Host / Organizer</span>

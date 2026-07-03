@@ -19,7 +19,7 @@ export async function POST(request : Request){
         const organizerId = parseInt(organizerIdStr , 10);
         const body = await request.json();
 
-        const {name , location , dateTime , duration , ticketTiers , description , banner , thumbnail, trailerUrls} = body;
+        const {name , location , dateTime , duration , ticketTiers , description , banner , thumbnail, trailerUrls, category} = body;
 
         if(!name || !location || !dateTime || !duration || !ticketTiers || !ticketTiers.length){
             return NextResponse.json({
@@ -39,6 +39,7 @@ export async function POST(request : Request){
             banner,
             thumbnail,
             trailerUrls,
+            category,
             ticketTiers
         });
 
