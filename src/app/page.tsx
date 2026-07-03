@@ -39,6 +39,7 @@ interface Event {
   };
 }
 
+
 export default function Home() {
   const router = useRouter();
 
