@@ -99,7 +99,7 @@ export default function RegistrationLogPage() {
     <div className="space-y-6 max-w-6xl mx-auto">
       {/* Heading */}
       <div>
-        <h2 className="text-xl font-semibold tracking-tight">Registration Log</h2>
+        <h2 className="text-xl font-semibold tracking-tight">Bookings</h2>
         <p className="text-sm text-foreground/60 font-light mt-0.5">
           Monitor reservations, seating demands, and payment statuses across your hosted events.
         </p>

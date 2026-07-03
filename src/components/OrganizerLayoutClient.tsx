@@ -148,7 +148,7 @@ export default function OrganizerLayoutClient({ children }: { children: React.Re
                 onClick={() => router.push("/organizer/bookings")}
               >
                 <Ticket className={`h-4 w-4 ${pathname === "/organizer/bookings" ? "text-primary" : "text-foreground/40"}`} />
-                Registration Log
+                Bookings
               </Button>
             </div>
           </div>
