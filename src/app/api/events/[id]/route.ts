@@ -1,6 +1,7 @@
 import { prisma } from "@/backend/lib/prisma";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
+import countries from "i18n-iso-countries";
 
 type RouteContext = {params : Promise<{id : string}>};
 
@@ -75,7 +76,15 @@ export async function PUT(request : Request , context : RouteContext){
     }
 
     const body = await request.json();
-    const { eventName, description, location, dateTime, duration, banner, thumbnail, trailerUrls, category, ticketTiers } = body;
+    const { eventName, description, location, country, pincode, dateTime, duration, banner, thumbnail, trailerUrls, category, ticketTiers } = body;
+
+    if (country && (country.length !== 3 || !countries.isValid(country))) {
+        return NextResponse.json({
+            error : 'Invalid country code. Please provide a valid 3-letter ISO code.'
+        } , {
+            status : 400
+        });
+    }
 
     const updatedEvent = await prisma.$transaction(async (tx)=>{
         const event = await tx.event.update({
@@ -84,6 +93,8 @@ export async function PUT(request : Request , context : RouteContext){
                 eventName,
                 description,
                 location,
+                country : country ?? undefined,
+                pincode : pincode ?? null,
                 dateTime : new Date(dateTime),
                 duration,
                 banner,

@@ -9,6 +9,8 @@ export async function GET(request : Request){
         const startDate = searchParams.get('startDate');
         const endDate = searchParams.get('endDate');
         const category = searchParams.get('category');
+        const country = searchParams.get('country');
+        const pincode = searchParams.get('pincode');
 
         const queryConditions: any = {
             status: 'PUBLISHED' 
@@ -24,6 +26,14 @@ export async function GET(request : Request){
 
         if(category && category !== 'ALL' && category !== 'all'){
             queryConditions.category = category;
+        }
+
+        if(country && country !== 'ALL' && country !== 'all'){
+            queryConditions.country = country;
+        }
+
+        if(pincode){
+            queryConditions.pincode = { contains: pincode };
         }
 
         if(startDate || endDate){

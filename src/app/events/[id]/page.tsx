@@ -17,6 +17,10 @@ import {
   Receipt 
 } from "lucide-react";
 import { toast } from "sonner";
+import countries from "i18n-iso-countries";
+import enLocale from "i18n-iso-countries/langs/en.json";
+
+countries.registerLocale(enLocale);
 
 interface TicketTier {
   id: number;
@@ -31,6 +35,8 @@ interface Event {
   eventName: string;
   description: string;
   location: string;
+  country?: string;
+  pincode?: string;
   dateTime: string;
   duration: string;
   status: string;
@@ -491,7 +497,11 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
                       <MapPin className="h-4 w-4 text-primary shrink-0" />
                       <div>
                         <p className="text-[9px] uppercase text-foreground/40 font-semibold">Location / Venue</p>
-                        <p className="font-semibold line-clamp-1">{event.location}</p>
+                        <p className="font-semibold text-xs">
+                          {event.location}
+                          {event.country && `, ${countries.getName(event.country, "en") || event.country}`}
+                          {event.pincode && ` (Pincode: ${event.pincode})`}
+                        </p>
                       </div>
                     </div>
                   </div>

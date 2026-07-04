@@ -1,5 +1,9 @@
 import { EventCategory } from "@prisma/client";
 import { prisma } from "../lib/prisma";
+import countries from "i18n-iso-countries";
+import enLocale from "i18n-iso-countries/langs/en.json";
+
+countries.registerLocale(enLocale);
 
 interface TicketTierInput{
     name : string;
@@ -13,6 +17,8 @@ interface CreateEventInput{
     name : string;
     description? : string;
     location : string;
+    country? : string;
+    pincode? : string;
     dateTime : string;
     duration : string;
     banner? : string;
@@ -21,9 +27,12 @@ interface CreateEventInput{
     category? : EventCategory;
     ticketTiers : TicketTierInput[];
 }
-
 export class EventService {
     static async createEventWithTiers(input : CreateEventInput){
+        if (input.country && (input.country.length !== 3 || !countries.isValid(input.country))) {
+            throw new Error("Invalid country code. Please provide a valid 3-letter ISO code.");
+        }
+
         return await prisma.$transaction(async(tx)=>{
             const event = await tx.event.create({
                 data : {
@@ -31,6 +40,8 @@ export class EventService {
                     eventName : input.name,
                     description : input.description ?? null,
                     location : input.location,
+                    country : input.country ?? "IND",
+                    pincode : input.pincode ?? null,
                     dateTime : new Date (input.dateTime),
                     duration : input.duration,
                     banner : input.banner ?? null,

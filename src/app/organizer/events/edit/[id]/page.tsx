@@ -7,6 +7,16 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import countries from "i18n-iso-countries";
+import enLocale from "i18n-iso-countries/langs/en.json";
+
+countries.registerLocale(enLocale);
+
+const countriesObject = countries.getNames("en", { select: "official" });
+const countriesList = Object.entries(countriesObject).map(([alpha2, name]) => ({
+  code: countries.alpha2ToAlpha3(alpha2) || "",
+  name
+})).filter(c => c.code).sort((a, b) => a.name.localeCompare(b.name));
 import { 
   ArrowLeft, 
   Loader2, 
@@ -38,6 +48,8 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
+  const [country, setCountry] = useState("IND");
+  const [pincode, setPincode] = useState("");
   const [dateTime, setDateTime] = useState("");
   const [duration, setDuration] = useState("");
   const [banner, setBanner] = useState("");
@@ -120,6 +132,8 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
         setThumbnail(ev.thumbnail || "");
         setTrailerUrls((ev.trailerUrls as string[]) || []);
         setCategory(ev.category || "OTHER");
+        setCountry(ev.country || "IND");
+        setPincode(ev.pincode || "");
 
         // Format date string correctly for <input type="datetime-local">
         if (ev.dateTime) {
@@ -241,6 +255,8 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
           eventName: name,
           description: description || null,
           location,
+          country,
+          pincode: pincode || null,
           dateTime: new Date(dateTime).toISOString(),
           duration,
           banner: banner || null,
@@ -393,6 +409,39 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                   required
                   className="h-10 bg-transparent border-border rounded-md px-3 shadow-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:border-ring transition-all placeholder:text-foreground/30 text-card-foreground text-sm"
                 />
+              </div>
+
+              {/* Country & Pincode Selection Grid */}
+              <div className="grid grid-cols-2 gap-4">
+                {/* Country dropdown */}
+                <div className="space-y-1.5">
+                  <Label htmlFor="country" className="text-xs font-semibold text-foreground/80">Country *</Label>
+                  <Select value={country} onValueChange={setCountry}>
+                    <SelectTrigger className="w-full h-10 bg-transparent border-border text-sm text-card-foreground focus:ring-1 focus:ring-ring">
+                      <SelectValue placeholder="Select Country" />
+                    </SelectTrigger>
+                    <SelectContent className="border-border bg-card text-card-foreground max-h-56 overflow-y-auto">
+                      {countriesList.map((c) => (
+                        <SelectItem key={c.code} value={c.code}>
+                          {c.name} ({c.code})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Pincode Input */}
+                <div className="space-y-1.5">
+                  <Label htmlFor="pincode" className="text-xs font-semibold text-foreground/80">Pincode / Zip Code</Label>
+                  <Input
+                    id="pincode"
+                    type="text"
+                    placeholder="e.g. 110001"
+                    value={pincode}
+                    onChange={(e) => setPincode(e.target.value)}
+                    className="h-10 bg-transparent border-border rounded-md px-3 shadow-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:border-ring transition-all placeholder:text-foreground/30 text-card-foreground text-sm"
+                  />
+                </div>
               </div>
 
               {/* Event Category Select Dropdown */}

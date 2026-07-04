@@ -25,6 +25,16 @@ import {
   Compass
 } from "lucide-react";
 import { toast } from "sonner";
+import countries from "i18n-iso-countries";
+import enLocale from "i18n-iso-countries/langs/en.json";
+
+countries.registerLocale(enLocale);
+
+const countriesObject = countries.getNames("en", { select: "official" });
+const countriesList = Object.entries(countriesObject).map(([alpha2, name]) => ({
+  code: countries.alpha2ToAlpha3(alpha2) || "",
+  name
+})).filter(c => c.code).sort((a, b) => a.name.localeCompare(b.name));
 
 interface TicketTier {
   id: number;
@@ -43,6 +53,8 @@ interface Event {
   thumbnail?: string;
   banner?: string;
   category?: string;
+  country?: string;
+  pincode?: string;
   ticketTiers: TicketTier[];
   organizer: {
     name: string;
@@ -74,6 +86,8 @@ export default function Home() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("ALL");
+  const [searchCountry, setSearchCountry] = useState("ALL");
+  const [searchPincode, setSearchPincode] = useState("");
   const [sortBy, setSortBy] = useState("soonest"); // "soonest", "latest", "price-low", "price-high"
 
   // Events Feed State
@@ -99,7 +113,7 @@ export default function Home() {
   }, []);
 
   // Fetch Events based on search criteria
-  const handleSearch = async (e?: React.FormEvent, catOverride?: string) => {
+  const handleSearch = async (e?: React.FormEvent, catOverride?: string, countryOverride?: string) => {
     if (e) e.preventDefault();
     setLoading(true);
 
@@ -112,6 +126,11 @@ export default function Home() {
       
       const activeCat = catOverride !== undefined ? catOverride : selectedCategory;
       if (activeCat && activeCat !== "ALL") params.append("category", activeCat);
+
+      const activeCountry = countryOverride !== undefined ? countryOverride : searchCountry;
+      if (activeCountry && activeCountry !== "ALL") params.append("country", activeCountry);
+
+      if (searchPincode) params.append("pincode", searchPincode);
 
       const response = await fetch(`/api/events/search?${params.toString()}`);
       const data = await response.json();
@@ -311,10 +330,10 @@ export default function Home() {
           </form>
 
           {/* Expanded filters toggle */}
-          <div className="flex flex-wrap items-center gap-4 mt-4 pt-4 border-t border-border/40 text-xs text-foreground/60 justify-between">
+          <div className="flex flex-wrap items-center gap-5 mt-4 pt-4 border-t border-border/40 text-xs text-foreground/60 w-full">
             <div className="flex items-center gap-2">
               <Calendar className="h-3.5 w-3.5" />
-              <span>End Date Boundary:</span>
+              <span>End Date:</span>
               <Input
                 type="date"
                 value={endDate}
@@ -324,6 +343,38 @@ export default function Home() {
             </div>
 
             <div className="flex items-center gap-2">
+              <MapPin className="h-3.5 w-3.5" />
+              <span>Country:</span>
+              <select
+                value={searchCountry}
+                onChange={(e) => {
+                  setSearchCountry(e.target.value);
+                  handleSearch(undefined, undefined, e.target.value);
+                }}
+                className="bg-transparent border border-border rounded-md px-2 py-1 text-xs focus:outline-none"
+              >
+                <option value="ALL">All Countries</option>
+                {countriesList.map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <MapPin className="h-3.5 w-3.5" />
+              <span>Pincode:</span>
+              <Input
+                type="text"
+                placeholder="Pincode..."
+                value={searchPincode}
+                onChange={(e) => setSearchPincode(e.target.value)}
+                className="h-7 w-28 px-2 py-0.5 bg-transparent border-border text-[10px]"
+              />
+            </div>
+
+            <div className="flex items-center gap-2 md:ml-auto">
               <SlidersHorizontal className="h-3.5 w-3.5" />
               <span>Sort Order:</span>
               <select
@@ -413,7 +464,9 @@ export default function Home() {
                 setStartDate("");
                 setEndDate("");
                 setSelectedCategory("ALL");
-                handleSearch(undefined, "ALL");
+                setSearchCountry("ALL");
+                setSearchPincode("");
+                handleSearch(undefined, "ALL", "ALL");
               }}
               className="mt-2 text-xs border-border h-9"
             >
@@ -482,7 +535,10 @@ export default function Home() {
                     </div>
                     <div className="flex items-center gap-2">
                       <MapPin className="h-3.5 w-3.5 text-foreground/40" />
-                      <span className="line-clamp-1">{event.location}</span>
+                      <span className="line-clamp-1">
+                        {event.location}
+                        {event.country && `, ${countries.getName(event.country, "en") || event.country}`}
+                      </span>
                     </div>
                   </CardContent>
 
