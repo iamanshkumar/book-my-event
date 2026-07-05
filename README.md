@@ -9,11 +9,12 @@ The application features a granular role-based access control system supporting 
 ## Key Features
 
 ### 1. Public Event Discovery & Checkout
-- Search and filter active events by title, venue location, or date ranges.
+- Search and filter active events by title, venue location, country, pincode, or date ranges.
 - Sort listings by proximity, creation date, or ticket price thresholds.
 - Dynamic ticket tier selection displaying seating availability, pricing summaries, and tax breakdowns.
-- Secure, authenticated booking process for client reservation checkouts.
-- Responsive teaser media player on checkout screens supporting YouTube, Instagram Reels, Vimeo, and raw HTML5 video files.
+- Horizontal Category Filter Pills Bar on the homepage with matching Lucide icons to browse events by Tech, Music, Sports, Movies, Comedy, Business, Arts, or Food & Drink categories.
+- Premium active teaser media player on checkout screens supporting multiple switching video trailers (YouTube, Instagram Reels, Vimeo, and raw HTML5 video files) with selector tabs.
+- Search-engine-optimized dynamic metadata layout for Event Details page and static layouts for login, register, and dashboard portals.
 
 ### 2. Onboarding & Workspace Access
 - Separated registration flows for Attendees (`/register`) and Organizers (`/register/organizer`) to secure default privileges.
@@ -29,11 +30,11 @@ The application features a granular role-based access control system supporting 
 
 ### 4. Organizer Workspace
 - Analytics dashboard presenting total revenue summaries, global ticket sales counts, event publishing stats, and fill-rate loaders.
-- Managed event catalog containing listings, schedule details, locations, and configured ticket tiers.
+- Managed event catalog containing listings, schedule details, locations, dynamic country dropdowns, and pincode settings.
 - Drag-and-drop/select-file local upload widget for event banners and thumbnails, storing media securely on server storage.
 - Scheduling Wizard allowing organizers to configure ticket tiers with custom seat capacities, price configurations, and tax rates.
-- Editor panel providing specification updates, trailer video URL configs, and ticket configuration alterations.
-- Registration log ledger representing booking history, attendee details, seat counts, and status tracking.
+- Editor panel providing specification updates, multiple trailer video link stacks, and category selection.
+- Bookings ledger representing reservation history, attendee details, seat counts, and status tracking.
 
 ### 5. Administrative Control Panel
 - Global overview statistics dashboard capturing system-wide platform revenues, registered users, active listings, and ticket sales.
@@ -126,10 +127,10 @@ Open [http://localhost:3000](http://localhost:3000) in your web browser to acces
 
 ### 3. Events Catalogue
 - `GET /api/events/list` - Retrieve published upcoming events.
-- `GET /api/events/search` - Retrieve events matching criteria parameters (title query, venue address, date ranges).
-- `GET /api/events/[id]` - Retrieve details of a single event including configured seating tiers and host organizer.
-- `POST /api/events/create` - Schedule a new event with multiple ticket tiers (requires ORGANIZER role privilege).
-- `PUT /api/events/[id]` - Modify event specifications and rebuild ticket structures (requires hosting ORGANIZER owner check).
+- `GET /api/events/search` - Retrieve events matching criteria parameters (title query, venue address, country, pincode, category, date ranges).
+- `GET /api/events/[id]` - Retrieve details of a single event including configured seating tiers, category, structured country and pincode, and trailerUrls JSON arrays.
+- `POST /api/events/create` - Schedule a new event with configurations for categories, multiple trailerUrls, country, pincode, and ticket tiers (requires ORGANIZER role privilege).
+- `PUT /api/events/[id]` - Modify event specifications including categories, multiple trailerUrls, country, and pincode (requires hosting ORGANIZER owner check).
 - `DELETE /api/events/[id]` - Drop owned event listing from active catalogs (requires hosting ORGANIZER owner check).
 - `POST /api/events/upload` - Upload thumbnail or banner images to server storage directories (requires authenticated session).
 
