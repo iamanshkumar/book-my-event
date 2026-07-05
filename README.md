@@ -41,6 +41,13 @@ The application features a granular role-based access control system supporting 
 - Diagnostic logs and quick action widgets navigating to control modules.
 - User management panel filtering profiles and executing role privileges (CUSTOMER, ORGANIZER, ADMIN).
 - Event moderation interface allowing admins to audit hosted events and perform administrative removals.
+- Website settings control panel allowing admins to dynamically change general branding configurations, SMTP servers, and security verification switches.
+
+### 6. Dynamic Branding & CAPTCHA Security
+- **General Branding:** Dynamically updates Website Title (branding name), Website Meta Title (SEO browser tab name), Hero Headline, and Website Logo.
+- **Dynamic favicon:** Automatically updates browser tab favicon to match the uploaded website logo.
+- **SMTP Settings:** Dynamic update panel for smtp server host, ports, and connection protocol details.
+- **Google reCAPTCHA Security:** Enables and disables secure CAPTCHA validation challenges on **Register Page** and **Forgot Password Page** client forms and server endpoints. Operates in Mock-validation mode when no site keys are registered.
 
 ---
 
@@ -151,6 +158,11 @@ Open [http://localhost:3000](http://localhost:3000) in your web browser to acces
 - `GET /api/admin/users` - Retrieve platform user directory with database search filters (requires ADMIN role).
 - `PATCH /api/admin/users/[id]/role` - Overrides user privilege roles CUSTOMER / ORGANIZER / ADMIN (requires ADMIN role).
 - `DELETE /api/admin/events/[id]` - Administrative force-delete event listings violating safety guidelines (requires ADMIN role).
+- `GET /api/admin/settings` - Retrieve website control settings details for General, SMTP, and Captcha configs (requires ADMIN role).
+- `PUT /api/admin/settings` - Save changes made to general branding, SMTP parameters, or security CAPTCHA preferences (requires ADMIN role).
+
+### 7. Public Configuration Settings
+- `GET /api/settings` - Returns public settings metadata (Website Title, Meta Title, Logo Image URL, Hero Headline, Captcha toggles, Site Key) for guest Discovery layouts and Auth pages.
 
 ---
 

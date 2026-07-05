@@ -9,15 +9,40 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import Captcha from "@/components/Captcha";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [captchaEnabled, setCaptchaEnabled] = useState(false);
+  const [siteKey, setSiteKey] = useState("");
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    async function loadCaptchaConfig() {
+      try {
+        const res = await fetch("/api/settings");
+        const data = await res.json();
+        setCaptchaEnabled(data.captchaEnabledForgotPassword);
+        setSiteKey(data.captchaSiteKey || "MOCK");
+      } catch (e) {
+        // ignore
+      }
+    }
+    loadCaptchaConfig();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!email) return;
+
+    if (captchaEnabled && !captchaToken) {
+      toast.error("Validation Required", {
+        description: "Please complete captcha verification check.",
+      });
+      return;
+    }
 
     setLoading(true);
     const toastId = toast.loading("Requesting password reset verification code...");
@@ -26,7 +51,7 @@ export default function ForgotPasswordPage() {
       const response = await fetch("/api/auth/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, recaptchaToken: captchaToken }),
       });
 
       const data = await response.json();
@@ -98,6 +123,15 @@ export default function ForgotPasswordPage() {
                 className="h-10 bg-transparent border-border rounded-md px-3 shadow-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:border-ring transition-all placeholder:text-foreground/30 text-card-foreground text-sm"
               />
             </div>
+
+            {captchaEnabled && (
+              <div className="pt-2">
+                <Captcha
+                  siteKey={siteKey}
+                  onChange={(token) => setCaptchaToken(token)}
+                />
+              </div>
+            )}
           </CardContent>
 
           <CardFooter className="flex flex-col space-y-4 pt-4 pb-6">

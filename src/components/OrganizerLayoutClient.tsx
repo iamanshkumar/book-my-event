@@ -11,6 +11,8 @@ export default function OrganizerLayoutClient({ children }: { children: React.Re
   const router = useRouter();
   const pathname = usePathname();
   const [user, setUser] = useState<any>(null);
+  const [websiteTitle, setWebsiteTitle] = useState("BookMyEvent");
+  const [websiteLogo, setWebsiteLogo] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadProfile() {
@@ -36,7 +38,20 @@ export default function OrganizerLayoutClient({ children }: { children: React.Re
         router.push("/login?redirect=/organizer/dashboard");
       }
     }
+    async function loadSettings() {
+      try {
+        const res = await fetch("/api/settings");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.websiteTitle) setWebsiteTitle(data.websiteTitle);
+          setWebsiteLogo(data.websiteLogo || null);
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
     loadProfile();
+    loadSettings();
   }, []);
 
   const handleLogout = async () => {
@@ -63,13 +78,14 @@ export default function OrganizerLayoutClient({ children }: { children: React.Re
       {/* Sidebar Navigation */}
       <aside className="w-72 border-r border-border bg-card hidden md:flex flex-col justify-between p-5 select-none shrink-0 h-full">
         <div className="space-y-7">
-          {/* Header Branding */}
           <div className="flex items-center gap-2.5 px-2">
-            <div className="bg-primary/10 text-primary p-2 rounded-lg border border-primary/20 shadow-inner">
-              <ShieldCheck className="h-4.5 w-4.5 stroke-[2.5]" />
-            </div>
+            {websiteLogo && (
+              <img src={websiteLogo} alt={websiteTitle} className="h-8 w-8 object-contain rounded-md" />
+            )}
             <div>
-              <span className="font-extrabold tracking-tight text-sm bg-gradient-to-r from-foreground via-foreground to-primary bg-clip-text text-transparent">BookMyEvent</span>
+              <span className="font-extrabold tracking-tight text-sm bg-gradient-to-r from-foreground via-foreground to-primary bg-clip-text text-transparent">
+                {websiteTitle}
+              </span>
               <p className="text-[9px] text-foreground/45 uppercase tracking-widest font-bold mt-0.5">Organizer Workspace</p>
             </div>
           </div>

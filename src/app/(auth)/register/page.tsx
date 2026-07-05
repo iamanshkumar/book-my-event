@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState , useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import Captcha  from "@/components/Captcha";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -18,15 +19,44 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  const [captchaEnabled, setCaptchaEnabled] = useState(false);
+  const [siteKey, setSiteKey] = useState("");
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+
+
+  useEffect(() => {
+    async function loadCaptchaConfig() {
+      try {
+        const res = await fetch("/api/settings");
+        const data = await res.json();
+        setCaptchaEnabled(data.captchaEnabledRegister);
+        setSiteKey(data.captchaSiteKey || "MOCK");
+      } catch (e) {
+        // ignore
+      }
+    }
+    loadCaptchaConfig();
+  }, []);
+  
+
+
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (captchaEnabled && !captchaToken) {
+      toast.error("Validation Required", {
+        description: "Please complete captcha verification check.",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, role: "CUSTOMER" })
+        body: JSON.stringify({ name, email, password, role: "CUSTOMER", recaptchaToken: captchaToken })
       });
 
       const data = await response.json();
@@ -75,12 +105,15 @@ export default function RegisterPage() {
             Sign up to discover live experiences and book gate passes
           </CardDescription>
         </CardHeader>
-        
+
         <form onSubmit={handleRegister}>
           <CardContent className="space-y-4 pt-4">
             {/* Full Name Input */}
             <div className="space-y-1.5">
-              <Label htmlFor="name" className="text-xs font-medium text-foreground/80">
+              <Label
+                htmlFor="name"
+                className="text-xs font-medium text-foreground/80"
+              >
                 Full Name
               </Label>
               <Input
@@ -96,7 +129,10 @@ export default function RegisterPage() {
 
             {/* Email Input */}
             <div className="space-y-1.5">
-              <Label htmlFor="email" className="text-xs font-medium text-foreground/80">
+              <Label
+                htmlFor="email"
+                className="text-xs font-medium text-foreground/80"
+              >
                 Email Address
               </Label>
               <Input
@@ -112,13 +148,16 @@ export default function RegisterPage() {
 
             {/* Password Input */}
             <div className="space-y-1.5">
-              <Label htmlFor="password" className="text-xs font-medium text-foreground/80">
+              <Label
+                htmlFor="password"
+                className="text-xs font-medium text-foreground/80"
+              >
                 Password
               </Label>
               <div className="relative flex items-center">
                 <Input
                   id="password"
-                  type={showPassword ? "text" : "password"} 
+                  type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -140,10 +179,19 @@ export default function RegisterPage() {
             </div>
           </CardContent>
 
+          {captchaEnabled && (
+            <div className="my-4">
+              <Captcha
+                siteKey={siteKey}
+                onChange={(token) => setCaptchaToken(token)}
+              />
+            </div>
+          )}
+
           <CardFooter className="flex flex-col space-y-4 pt-4 pb-6">
-            <Button 
-              type="submit" 
-              disabled={loading} 
+            <Button
+              type="submit"
+              disabled={loading}
               className="w-full h-10 bg-primary text-primary-foreground hover:bg-primary/90 font-medium rounded-md text-sm transition-colors shadow-sm"
             >
               {loading ? (
@@ -155,12 +203,12 @@ export default function RegisterPage() {
                 "Get Started"
               )}
             </Button>
-            
+
             <div className="text-center text-xs text-foreground/50 font-normal space-y-2">
               <div>
                 Already have an account?{" "}
-                <Button 
-                  variant="link" 
+                <Button
+                  variant="link"
                   type="button"
                   onClick={() => router.push("/login")}
                   className="p-0 text-xs text-foreground font-semibold h-auto py-0 hover:underline"
@@ -170,8 +218,8 @@ export default function RegisterPage() {
               </div>
               <div className="pt-2 border-t border-border/40">
                 Are you hosting events?{" "}
-                <Button 
-                  variant="link" 
+                <Button
+                  variant="link"
                   type="button"
                   onClick={() => router.push("/register/organizer")}
                   className="p-0 text-xs text-primary font-semibold h-auto py-0 hover:underline"

@@ -90,6 +90,11 @@ export default function Home() {
   const [searchPincode, setSearchPincode] = useState("");
   const [sortBy, setSortBy] = useState("soonest"); // "soonest", "latest", "price-low", "price-high"
 
+  // Dynamic branding settings
+  const [websiteTitle, setWebsiteTitle] = useState("BookMyEvent");
+  const [websiteLogo, setWebsiteLogo] = useState<string | null>(null);
+  const [heroHeading, setHeroHeading] = useState("Unlock Unforgettable Live Experiences");
+
   // Events Feed State
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
@@ -109,7 +114,21 @@ export default function Home() {
         setAuthChecked(true);
       }
     }
+    async function loadSettings() {
+      try {
+        const res = await fetch("/api/settings");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.websiteTitle) setWebsiteTitle(data.websiteTitle);
+          setWebsiteLogo(data.websiteLogo || null);
+          if (data.heroHeading) setHeroHeading(data.heroHeading);
+        }
+      } catch (err) {
+        // ignore
+      }
+    }
     checkAuth();
+    loadSettings();
   }, []);
 
   // Fetch Events based on search criteria
@@ -199,10 +218,10 @@ export default function Home() {
       <header className="sticky top-0 z-50 backdrop-blur-md bg-background/80 border-b border-border/40">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => router.push("/")}>
-            <div className="bg-primary text-primary-foreground p-1.5 rounded-md flex items-center justify-center">
-              <Calendar className="h-5 w-5" />
-            </div>
-            <span className="font-semibold tracking-tight text-lg">BookMyEvent</span>
+            {websiteLogo && (
+              <img src={websiteLogo} alt={websiteTitle} className="h-8 w-8 object-contain rounded-md" />
+            )}
+            <span className="font-semibold tracking-tight text-lg">{websiteTitle}</span>
           </div>
 
           <div className="flex items-center gap-6">
@@ -261,7 +280,7 @@ export default function Home() {
       <section className="relative overflow-hidden pt-20 pb-16 px-6 max-w-7xl mx-auto w-full text-center space-y-8">
         <div className="space-y-4 max-w-3xl mx-auto">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight leading-[1.1] text-foreground">
-            Unlock Unforgettable <span className="bg-gradient-to-r from-primary to-orange-400 bg-clip-text text-transparent">Live Experiences</span>
+            {heroHeading}
           </h1>
           <p className="text-base sm:text-lg text-foreground/60 font-light max-w-xl mx-auto leading-relaxed">
             Reserve your spots instantly, access dynamic ticketing passes, and experience events live.
