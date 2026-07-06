@@ -22,7 +22,8 @@ import {
   Briefcase,
   Paintbrush,
   Utensils,
-  Compass
+  Compass,
+  LogOut
 } from "lucide-react";
 import { toast } from "sonner";
 import countries from "i18n-iso-countries";
@@ -264,12 +265,28 @@ export default function Home() {
 
               {authChecked && (
                 user ? (
-                  <Button
-                    onClick={handleLogout}
-                    className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 text-xs font-semibold rounded-md shadow-sm transition-all"
-                  >
-                    Logout
-                  </Button>
+                  <>
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        const r = user.role;
+                        if (r === "ADMIN") router.push("/admin/dashboard");
+                        else if (r === "ORGANIZER") router.push("/organizer/dashboard");
+                        else router.push("/dashboard");
+                      }}
+                      className="h-9 px-3 text-xs font-medium rounded-md hover:bg-foreground/5 md:hidden"
+                    >
+                      Dashboard
+                    </Button>
+                    <Button
+                      onClick={handleLogout}
+                      className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 w-9 md:w-auto px-0 md:px-4 text-xs font-semibold rounded-md shadow-sm transition-all flex items-center justify-center shrink-0"
+                      title="Logout"
+                    >
+                      <LogOut className="h-4 w-4 md:hidden" />
+                      <span className="hidden md:inline">Logout</span>
+                    </Button>
+                  </>
                 ) : (
                   <>
                     <Button

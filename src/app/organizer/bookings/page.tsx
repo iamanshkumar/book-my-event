@@ -139,7 +139,7 @@ export default function RegistrationLogPage() {
       {/* Main Table card */}
       <Card className="border border-border bg-card shadow-none rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse hidden md:table">
             <thead>
               <tr className="bg-foreground/[0.01] border-b border-border/40 text-[10px] uppercase font-bold tracking-wider text-foreground/50 select-none">
                 <th className="py-3 px-5">ID</th>
@@ -215,6 +215,45 @@ export default function RegistrationLogPage() {
               )}
             </tbody>
           </table>
+
+          {/* Mobile Card Layout */}
+          <div className="md:hidden divide-y divide-border/30">
+            {filteredBookings.length === 0 ? (
+              <div className="py-16 text-center text-foreground/45 select-none font-normal">
+                <div className="flex flex-col items-center justify-center gap-2">
+                  <AlertCircle className="h-5 w-5 text-foreground/30" />
+                  <span>No registrations match your search criteria.</span>
+                </div>
+              </div>
+            ) : (
+              filteredBookings.map((booking) => (
+                <div key={booking.id} className="p-4 space-y-3 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-[11px] text-foreground/50 font-medium">#{booking.id}</span>
+                    <span className={`text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-sm inline-block select-none ${statusColors[booking.paymentStatus]}`}>
+                      {booking.paymentStatus}
+                    </span>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="font-semibold text-foreground leading-snug">{booking.event.eventName}</div>
+                    <div className="text-[11px] text-foreground/60">
+                      Attendee: <span className="font-medium text-foreground">{booking.user.name}</span> ({booking.user.email})
+                    </div>
+                    <div className="text-[11px] text-foreground/60">
+                      Tier: <span className="font-medium text-foreground">{booking.ticketTier.tierName}</span> | Qty: <span className="font-medium text-foreground">{booking.quantity}</span>
+                    </div>
+                    <div className="text-[11px] text-foreground/60">
+                      Total Paid: <span className="font-semibold text-foreground">₹{parseFloat(booking.totalPricePaid).toFixed(2)}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between text-[10px] text-foreground/50">
+                    <span>Event Date: {new Date(booking.event.dateTime).toLocaleDateString()}</span>
+                    <span>Booked: {new Date(booking.createdAt).toLocaleDateString()}</span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </Card>
     </div>

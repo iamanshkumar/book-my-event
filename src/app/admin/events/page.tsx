@@ -144,7 +144,7 @@ export default function EventModerationPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse hidden md:table">
               <thead>
                 <tr className="bg-foreground/[0.01] border-b border-border/40 text-[10px] uppercase font-bold tracking-wider text-foreground/50 select-none">
                   <th className="py-3.5 px-5">Event ID</th>
@@ -214,6 +214,51 @@ export default function EventModerationPage() {
                 )}
               </tbody>
             </table>
+
+            {/* Mobile Card Layout */}
+            <div className="md:hidden divide-y divide-border/30">
+              {filteredEvents.length === 0 ? (
+                <div className="py-16 text-center text-foreground/45 select-none font-normal">
+                  <div className="flex flex-col items-center justify-center gap-2">
+                    <AlertCircle className="h-5 w-5 text-foreground/30" />
+                    <span>No active event listings found.</span>
+                  </div>
+                </div>
+              ) : (
+                filteredEvents.map((e) => (
+                  <div key={e.id} className="p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-[11px] text-foreground/50 font-medium">#{e.id}</span>
+                      <span className="font-semibold text-foreground/95 text-xs">{getPriceRange(e.ticketTiers)}</span>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="font-semibold text-foreground leading-snug">{e.eventName}</div>
+                      <div className="text-[11px] text-foreground/60 flex items-center gap-1.5">
+                        <Calendar className="h-3.5 w-3.5 text-foreground/35" />
+                        <span>{new Date(e.dateTime).toLocaleDateString()} ({e.duration})</span>
+                      </div>
+                      <div className="text-[11px] text-foreground/60 flex items-center gap-1.5">
+                        <MapPin className="h-3.5 w-3.5 text-foreground/35 shrink-0" />
+                        <span className="line-clamp-1">{e.location}</span>
+                      </div>
+                      <div className="text-[11px] text-foreground/60">
+                        Host: <span className="font-medium text-foreground">{e.organizer?.name || "System Host"}</span>
+                      </div>
+                    </div>
+                    <div className="pt-1">
+                      <Button
+                        variant="ghost"
+                        onClick={() => handleForceDelete(e.id, e.eventName)}
+                        className="h-8 w-full border border-destructive/20 text-destructive hover:bg-destructive/10 rounded-md text-[11px] font-semibold transition-colors gap-1.5 cursor-pointer flex items-center justify-center"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        Force Delete
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         )}
       </Card>

@@ -126,7 +126,7 @@ export default function UserManagementPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse hidden md:table">
               <thead>
                 <tr className="bg-foreground/[0.01] border-b border-border/40 text-[10px] uppercase font-bold tracking-wider text-foreground/50 select-none">
                   <th className="py-3.5 px-5">User ID</th>
@@ -189,6 +189,43 @@ export default function UserManagementPage() {
                 )}
               </tbody>
             </table>
+
+            {/* Mobile Card Layout */}
+            <div className="md:hidden divide-y divide-border/30">
+              {users.length === 0 ? (
+                <div className="py-16 text-center text-foreground/45 select-none font-normal">
+                  <div className="flex flex-col items-center justify-center gap-2">
+                    <AlertCircle className="h-5 w-5 text-foreground/30" />
+                    <span>No registered accounts found matching your query.</span>
+                  </div>
+                </div>
+              ) : (
+                users.map((u) => (
+                  <div key={u.id} className="p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-[11px] text-foreground/50 font-medium">#{u.id}</span>
+                      <select
+                        value={u.role}
+                        onChange={(e) => handleRoleChange(u.id, u.name, e.target.value as any)}
+                        className="bg-transparent border border-border/80 hover:border-border rounded-md px-2 py-1 text-[11px] text-foreground font-semibold focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary cursor-pointer w-[100px]"
+                      >
+                        <option value="CUSTOMER">Customer</option>
+                        <option value="ORGANIZER">Organizer</option>
+                        <option value="ADMIN">Admin</option>
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="font-semibold text-foreground">{u.name}</div>
+                      <div className="text-foreground/70 text-[11px] break-all">{u.email}</div>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[10px] text-foreground/50">
+                      <Calendar className="h-3.5 w-3.5 text-foreground/35" />
+                      <span>Joined {new Date(u.createdAt).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         )}
       </Card>
