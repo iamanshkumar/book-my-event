@@ -130,6 +130,8 @@ model SmtpSetting {
   smtpServer   String @default("localhost") @map("smtp_server") @db.VarChar(255)
   smtpPort     Int    @default(587) @map("smtp_port")
   smtpProtocol String @default("TLS") @map("smtp_protocol") @db.VarChar(50)
+  smtpUser     String @default("") @map("smtp_user") @db.VarChar(255)
+  smtpPassword String @default("") @map("smtp_password") @db.VarChar(255)
 
   @@map("smtp_settings")
 }

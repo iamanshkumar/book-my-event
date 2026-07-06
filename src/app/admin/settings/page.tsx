@@ -38,6 +38,8 @@ export default function AdminSettingsPage() {
   const [smtpServer, setSmtpServer] = useState("");
   const [smtpPort, setSmtpPort] = useState("587");
   const [smtpProtocol, setSmtpProtocol] = useState("TLS");
+  const [smtpUser, setSmtpUser] = useState("");
+  const [smtpPassword, setSmtpPassword] = useState("");
 
   // States for Captcha settings
   const [captchaEnabledRegister, setCaptchaEnabledRegister] = useState(false);
@@ -60,6 +62,8 @@ export default function AdminSettingsPage() {
           setSmtpServer(data.smtp.smtpServer || "");
           setSmtpPort(data.smtp.smtpPort?.toString() || "587");
           setSmtpProtocol(data.smtp.smtpProtocol || "TLS");
+          setSmtpUser(data.smtp.smtpUser || "");
+          setSmtpPassword(data.smtp.smtpPassword || "");
 
           setCaptchaEnabledRegister(data.captcha.captchaEnabledRegister || false);
           setCaptchaEnabledForgotPassword(data.captcha.captchaEnabledForgotPassword || false);
@@ -339,11 +343,30 @@ export default function AdminSettingsPage() {
               </select>
             </div>
 
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold">SMTP Username</Label>
+              <Input
+                value={smtpUser}
+                placeholder="e.g. postmaster@yourdomain.com"
+                onChange={(e) => setSmtpUser(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold">SMTP Password</Label>
+              <Input
+                type="password"
+                value={smtpPassword}
+                placeholder="••••••••"
+                onChange={(e) => setSmtpPassword(e.target.value)}
+              />
+            </div>
+
             <Button
               className="mt-4"
               disabled={saving}
               onClick={() =>
-                handleUpdate("smtp", { smtpServer, smtpPort, smtpProtocol })
+                handleUpdate("smtp", { smtpServer, smtpPort, smtpProtocol, smtpUser, smtpPassword })
               }
             >
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save

@@ -25,7 +25,9 @@ export async function getSmtpSettings(userId = 0){
                 userId,
                 smtpServer : "localhost",
                 smtpPort : 587,
-                smtpProtocol : "TLS"
+                smtpProtocol : "TLS",
+                smtpUser : "",
+                smtpPassword : ""
             }
         })
     }

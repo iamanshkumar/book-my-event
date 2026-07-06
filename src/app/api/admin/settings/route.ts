@@ -65,7 +65,9 @@ export async function PUT(request : Request){
                 data : {
                     smtpServer : data.smtpServer,
                     smtpPort : parseInt(data.smtpPort, 10) || 587,
-                    smtpProtocol : data.smtpProtocol
+                    smtpProtocol : data.smtpProtocol,
+                    smtpUser : data.smtpUser || "",
+                    smtpPassword : data.smtpPassword || ""
                 }
             });
 
