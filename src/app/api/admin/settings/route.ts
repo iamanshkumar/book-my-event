@@ -1,5 +1,12 @@
 import { prisma } from "@/backend/lib/prisma";
-import { getCaptchaSettings, getGeneralSettings, getSmtpSettings } from "@/backend/lib/settings";
+import {
+  getCaptchaSettings,
+  getGeneralSettings,
+  getSmtpSettings,
+  updateGeneralSettings,
+  updateSmtpSettings,
+  updateCaptchaSettings
+} from "@/backend/lib/settings";
 import { error } from "console";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
@@ -44,48 +51,17 @@ export async function PUT(request : Request){
         const {type , data} = body;
 
         if(type==="general"){
-            const general = await getGeneralSettings();
-            const updated = await prisma.generalSetting.update({
-                where : {id : general.id},
-                data : {
-                    websiteTitle : data.websiteTitle,
-                    metaTitle : data.metaTitle || data.websiteTitle,
-                    websiteLogo : data.websiteLogo,
-                    heroHeading : data.heroHeading
-                }
-            });
-
+            const updated = await updateGeneralSettings(0, data);
             return NextResponse.json({message : "General settings updated" , settings : updated} , {status : 200});
         }
 
         if(type==="smtp"){
-            const smtp = await getSmtpSettings();
-            const updated = await prisma.smtpSetting.update({
-                where : {id : smtp.id},
-                data : {
-                    smtpServer : data.smtpServer,
-                    smtpPort : parseInt(data.smtpPort, 10) || 587,
-                    smtpProtocol : data.smtpProtocol,
-                    smtpUser : data.smtpUser || "",
-                    smtpPassword : data.smtpPassword || ""
-                }
-            });
-
+            const updated = await updateSmtpSettings(0, data);
             return NextResponse.json({message : "SMTP settings updated" , settings : updated} , {status : 200});
         }
 
         if(type==="captcha"){
-            const captcha = await getCaptchaSettings();
-            const updated = await prisma.captchaSetting.update({
-                where : {id : captcha.id},
-                data : {
-                    captchaEnabledRegister : !!data.captchaEnabledRegister,
-                    captchaEnabledForgotPassword : !!data.captchaEnabledForgotPassword,
-                    captchaSiteKey : data.captchaSiteKey,
-                    captchaSecretKey : data.captchaSecretKey
-                }
-            });
-
+            const updated = await updateCaptchaSettings(0, data);
             return NextResponse.json({message : "Captcha settings updated" , settings : updated} , {status : 200});
         }
 

@@ -113,36 +113,12 @@ enum PaymentStatus {
   REFUNDED
 }
 
-model GeneralSetting {
-  id           Int     @id @default(autoincrement())
-  userId       Int     @unique @default(0) @map("user_id")
-  websiteTitle String  @default("BookMyEvent") @map("website_title") @db.VarChar(255)
-  metaTitle    String  @default("BookMyEvent - Discover & Book Live Experiences") @map("meta_title") @db.VarChar(255)
-  websiteLogo  String? @map("website_logo") @db.VarChar(500)
-  heroHeading  String  @default("Unlock Unforgettable Live Experiences") @map("hero_heading") @db.VarChar(255)
+model Setting {
+  id            Int    @id @default(autoincrement()) @map("settings_id")
+  userId        Int    @default(0) @map("user_id")
+  settingsName  String @map("settings_name") @db.VarChar(255)
+  settingsValue String @map("settings_value") @db.Text
 
-  @@map("general_settings")
-}
-
-model SmtpSetting {
-  id           Int    @id @default(autoincrement())
-  userId       Int    @unique @default(0) @map("user_id")
-  smtpServer   String @default("localhost") @map("smtp_server") @db.VarChar(255)
-  smtpPort     Int    @default(587) @map("smtp_port")
-  smtpProtocol String @default("TLS") @map("smtp_protocol") @db.VarChar(50)
-  smtpUser     String @default("") @map("smtp_user") @db.VarChar(255)
-  smtpPassword String @default("") @map("smtp_password") @db.VarChar(255)
-
-  @@map("smtp_settings")
-}
-
-model CaptchaSetting {
-  id                           Int     @id @default(autoincrement())
-  userId                       Int     @unique @default(0) @map("user_id")
-  captchaEnabledRegister       Boolean @default(false) @map("captcha_enabled_register")
-  captchaEnabledForgotPassword Boolean @default(false) @map("captcha_enabled_forgot_password")
-  captchaSiteKey               String  @default("") @map("captcha_site_key") @db.VarChar(255)
-  captchaSecretKey             String  @default("") @map("captcha_secret_key") @db.VarChar(255)
-
-  @@map("captcha_settings")
+  @@unique([userId, settingsName])
+  @@map("settings")
 }
