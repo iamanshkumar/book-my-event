@@ -379,7 +379,7 @@ export default function CreateEventPage() {
                   placeholder="Tell your attendees about the event schedules, rules, or special guests..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="min-h-[120px] bg-transparent border border-border rounded-md px-3 py-2 shadow-none focus-visible:ring-1 focus-visible:ring-ring focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder:text-foreground/30 text-card-foreground text-sm"
+                  className="min-h-[120px] w-full bg-transparent border border-border rounded-md px-3 py-2 shadow-none focus-visible:ring-1 focus-visible:ring-ring focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder:text-foreground/30 text-card-foreground text-sm"
                 />
               </div>
 
