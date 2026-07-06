@@ -210,6 +210,23 @@ export default function Home() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST"
+      });
+      const data = await response.json();
+      toast.success(data.message);
+      
+      setUser(null);
+      router.refresh();
+    } catch (err: any) {
+      toast.error("Logout failed", {
+        description: err.message,
+      });
+    }
+  };
+
   const sortedEvents = getSortedEvents();
 
   return (
@@ -248,10 +265,10 @@ export default function Home() {
               {authChecked && (
                 user ? (
                   <Button
-                    onClick={handleCTA}
+                    onClick={handleLogout}
                     className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 text-xs font-semibold rounded-md shadow-sm transition-all"
                   >
-                    Go to Dashboard
+                    Logout
                   </Button>
                 ) : (
                   <>
