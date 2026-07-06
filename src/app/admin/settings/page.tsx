@@ -228,11 +228,7 @@ export default function AdminSettingsPage() {
               <Label className="text-xs font-semibold">Website Title (Branding Name)</Label>
               <Input
                 value={websiteTitle}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setWebsiteTitle(val);
-                  setMetaTitle(val);
-                }}
+                onChange={(e) => setWebsiteTitle(e.target.value)}
               />
             </div>
 
