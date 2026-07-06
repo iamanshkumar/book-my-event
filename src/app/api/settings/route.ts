@@ -9,6 +9,7 @@ export async function GET(){
         return NextResponse.json({
             websiteTitle : general.websiteTitle,
             metaTitle : general.metaTitle,
+            metaDescription : general.metaDescription,
             websiteLogo : general.websiteLogo,
             heroHeading : general.heroHeading,
             captchaEnabledRegister : captcha.captchaEnabledRegister,

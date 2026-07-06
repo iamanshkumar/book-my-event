@@ -17,6 +17,7 @@ export default function GeneralSettingsPage() {
   // States for general settings
   const [websiteTitle, setWebsiteTitle] = useState("");
   const [metaTitle, setMetaTitle] = useState("");
+  const [metaDescription, setMetaDescription] = useState("");
   const [websiteLogo, setWebsiteLogo] = useState("");
   const [heroHeading, setHeroHeading] = useState("");
 
@@ -28,6 +29,7 @@ export default function GeneralSettingsPage() {
           const data = await res.json();
           setWebsiteTitle(data.general.websiteTitle || "");
           setMetaTitle(data.general.metaTitle || "");
+          setMetaDescription(data.general.metaDescription || "");
           setWebsiteLogo(data.general.websiteLogo || "");
           setHeroHeading(data.general.heroHeading || "");
         }
@@ -52,6 +54,7 @@ export default function GeneralSettingsPage() {
           data: {
             websiteTitle,
             metaTitle,
+            metaDescription,
             websiteLogo,
             heroHeading,
           },
@@ -143,6 +146,17 @@ export default function GeneralSettingsPage() {
             <Input
               value={metaTitle}
               onChange={(e) => setMetaTitle(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold">Website Meta Description (SEO)</Label>
+            <textarea
+              value={metaDescription}
+              onChange={(e) => setMetaDescription(e.target.value)}
+              className="w-full bg-background border border-border text-foreground text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary"
+              rows={3}
+              placeholder="Find live shows, concerts, workshops, and theater events..."
             />
           </div>
 

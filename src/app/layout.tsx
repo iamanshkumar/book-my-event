@@ -19,7 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
     console.log("Root Layout generateMetadata database value:", general);
     return {
       title: general.metaTitle || general.websiteTitle,
-      description: "Find live shows, concerts, workshops, and theater events. Secure your seats and book ticket passes online.",
+      description: general.metaDescription || "Find live shows, concerts, workshops, and theater events. Secure your seats and book ticket passes online.",
       icons: {
         icon: general.websiteLogo || "/favicon.ico",
       }
