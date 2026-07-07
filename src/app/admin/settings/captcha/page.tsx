@@ -16,7 +16,8 @@ export default function CaptchaSettingsPage() {
 
   // States for Captcha settings
   const [captchaEnabledRegister, setCaptchaEnabledRegister] = useState(false);
-  const [captchaEnabledForgotPassword, setCaptchaEnabledForgotPassword] = useState(false);
+  const [captchaEnabledForgotPassword, setCaptchaEnabledForgotPassword] =
+    useState(false);
   const [captchaSiteKey, setCaptchaSiteKey] = useState("");
   const [captchaSecretKey, setCaptchaSecretKey] = useState("");
 
@@ -26,8 +27,12 @@ export default function CaptchaSettingsPage() {
         const res = await fetch("/api/admin/settings");
         if (res.ok) {
           const data = await res.json();
-          setCaptchaEnabledRegister(data.captcha.captchaEnabledRegister || false);
-          setCaptchaEnabledForgotPassword(data.captcha.captchaEnabledForgotPassword || false);
+          setCaptchaEnabledRegister(
+            data.captcha.captchaEnabledRegister || false,
+          );
+          setCaptchaEnabledForgotPassword(
+            data.captcha.captchaEnabledForgotPassword || false,
+          );
           setCaptchaSiteKey(data.captcha.captchaSiteKey || "");
           setCaptchaSecretKey(data.captcha.captchaSecretKey || "");
         }
@@ -127,7 +132,9 @@ export default function CaptchaSettingsPage() {
                 type="checkbox"
                 id="captchaEnabledForgotPassword"
                 checked={captchaEnabledForgotPassword}
-                onChange={(e) => setCaptchaEnabledForgotPassword(e.target.checked)}
+                onChange={(e) =>
+                  setCaptchaEnabledForgotPassword(e.target.checked)
+                }
                 className="h-4 w-4 accent-primary rounded border-border"
               />
               <Label
@@ -169,6 +176,14 @@ export default function CaptchaSettingsPage() {
           >
             {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save
             Captcha Settings
+          </Button>
+
+          <Button
+            onClick={() => router.push("/admin/settings")}
+            variant="outline"
+            className="ml-2 border-border text-foreground hover:bg-foreground/5 text-xs font-semibold transition-all cursor-pointer"
+          >
+            Back
           </Button>
         </div>
       </Card>

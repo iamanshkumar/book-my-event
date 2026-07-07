@@ -134,7 +134,9 @@ export default function GeneralSettingsPage() {
       <Card className="border border-border bg-card shadow-none p-6 max-w-2xl">
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold">Website Title (Branding Name)</Label>
+            <Label className="text-xs font-semibold">
+              Website Title (Branding Name)
+            </Label>
             <Input
               value={websiteTitle}
               onChange={(e) => setWebsiteTitle(e.target.value)}
@@ -142,7 +144,9 @@ export default function GeneralSettingsPage() {
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold">Website Meta Title (Browser Tab / SEO)</Label>
+            <Label className="text-xs font-semibold">
+              Website Meta Title (Browser Tab / SEO)
+            </Label>
             <Input
               value={metaTitle}
               onChange={(e) => setMetaTitle(e.target.value)}
@@ -150,7 +154,9 @@ export default function GeneralSettingsPage() {
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold">Website Meta Description (SEO)</Label>
+            <Label className="text-xs font-semibold">
+              Website Meta Description (SEO)
+            </Label>
             <textarea
               value={metaDescription}
               onChange={(e) => setMetaDescription(e.target.value)}
@@ -171,9 +177,7 @@ export default function GeneralSettingsPage() {
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold">
-              Website Brand Logo
-            </Label>
+            <Label className="text-xs font-semibold">Website Brand Logo</Label>
             <div className="flex items-center gap-4">
               {websiteLogo && (
                 <img
@@ -213,6 +217,14 @@ export default function GeneralSettingsPage() {
           >
             {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save
             General Settings
+          </Button>
+
+          <Button
+            onClick={() => router.push("/admin/settings")}
+            variant="outline"
+            className="ml-2 border-border text-foreground hover:bg-foreground/5 text-xs font-semibold transition-all cursor-pointer"
+          >
+            Back
           </Button>
         </div>
       </Card>

@@ -101,7 +101,8 @@ export default function SmtpSettingsPage() {
             SMTP Settings
           </h2>
           <p className="text-xs text-foreground/60">
-            Configure SMTP email server integrations, port selections, and encryption.
+            Configure SMTP email server integrations, port selections, and
+            encryption.
           </p>
         </div>
       </div>
@@ -127,9 +128,7 @@ export default function SmtpSettingsPage() {
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold">
-              Encryption Protocol
-            </Label>
+            <Label className="text-xs font-semibold">Encryption Protocol</Label>
             <select
               value={smtpProtocol}
               onChange={(e) => setSmtpProtocol(e.target.value)}
@@ -167,6 +166,14 @@ export default function SmtpSettingsPage() {
           >
             {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save
             SMTP Settings
+          </Button>
+
+          <Button
+            onClick={() => router.push("/admin/settings")}
+            variant="outline"
+            className="ml-2 border-border text-foreground hover:bg-foreground/5 text-xs font-semibold transition-all cursor-pointer"
+          >
+            Back
           </Button>
         </div>
       </Card>
