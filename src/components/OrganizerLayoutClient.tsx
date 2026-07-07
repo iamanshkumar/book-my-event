@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Ticket, LogOut, Compass, Calendar, Sparkles, BarChart3, PlusCircle, ShieldCheck, Layers } from "lucide-react";
+import { Ticket, LogOut, Compass, Calendar, Sparkles, BarChart3, PlusCircle, ShieldCheck, Layers, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -168,6 +168,22 @@ export default function OrganizerLayoutClient({ children }: { children: React.Re
                   Bookings
                 </Button>
               </div>
+
+              <div>
+                <p className="px-2 text-[9px] uppercase font-bold tracking-widest text-foreground/35 mb-2">Preferences</p>
+                <Button 
+                  variant={pathname === "/organizer/profile/currency" ? "secondary" : "ghost"} 
+                  className={`w-full justify-start gap-3 h-9.5 text-xs rounded-lg cursor-pointer border border-transparent transition-all ${
+                    pathname === "/organizer/profile/currency" 
+                      ? "bg-primary/10 text-primary border-primary/15 font-semibold" 
+                      : "text-foreground/60 hover:bg-foreground/[0.02] hover:text-foreground font-light"
+                  }`} 
+                  onClick={() => router.push("/organizer/profile/currency")}
+                >
+                  <Coins className={`h-4 w-4 ${pathname === "/organizer/profile/currency" ? "text-primary" : "text-foreground/40"}`} />
+                  Currency Settings
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -264,6 +280,15 @@ export default function OrganizerLayoutClient({ children }: { children: React.Re
         >
           <Ticket className="h-5 w-5" />
           <span>Bookings</span>
+        </button>
+        <button
+          onClick={() => router.push("/organizer/profile/currency")}
+          className={`flex flex-col items-center gap-1 text-[10px] font-medium transition-all cursor-pointer ${
+            pathname === "/organizer/profile/currency" ? "text-primary" : "text-foreground/50"
+          }`}
+        >
+          <Coins className="h-5 w-5" />
+          <span>Currency</span>
         </button>
       </nav>
     </div>

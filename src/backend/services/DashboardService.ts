@@ -2,6 +2,12 @@ import { prisma } from "../lib/prisma";
 
 export class DashboardService{
     static async getOrganizerMetrics(organizerId : number){
+        const user = await prisma.user.findUnique({
+            where: { id: organizerId },
+            select: { defaultCurrency: true }
+        });
+        const defaultCurrency = user?.defaultCurrency || "INR";
+
         const events = await prisma.event.findMany({
             where : {
                 organizerId
@@ -47,6 +53,7 @@ export class DashboardService{
               status: event.status,
               dateTime: event.dateTime,
               revenue: eventRevenue,
+              currency: event.currency,
               ticketsSold: eventTicketsSold,
               totalCapacity: eventTotalCapacity,
               fillRatePercentage: eventTotalCapacity > 0 
@@ -60,6 +67,7 @@ export class DashboardService{
               totalRevenue,
               totalTicketsSold,
               totalEventsPublished: events.length,
+              defaultCurrency,
               globalFillRatePercentage: totalCapacityAcrossEvents > 0 
                 ? Math.round((totalTicketsSold / totalCapacityAcrossEvents) * 100) 
                 : 0

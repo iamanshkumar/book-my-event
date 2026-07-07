@@ -16,6 +16,7 @@ import {
   Edit3
 } from "lucide-react";
 import { toast } from "sonner";
+import { formatPrice } from "@/backend/lib/currency";
 
 interface EventOverview {
   eventId: number;
@@ -23,6 +24,7 @@ interface EventOverview {
   status: string;
   dateTime: string;
   revenue: number;
+  currency: string;
   ticketsSold: number;
   totalCapacity: number;
   fillRatePercentage: number;
@@ -33,6 +35,7 @@ interface Metrics {
     totalRevenue: number;
     totalTicketsSold: number;
     totalEventsPublished: number;
+    defaultCurrency: string;
     globalFillRatePercentage: number;
   };
   eventsList: EventOverview[];
@@ -101,7 +104,7 @@ export default function OrganizerDashboard() {
             <CreditCard className="h-4 w-4 text-foreground/30" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold tracking-tight">₹{overview.totalRevenue.toFixed(2)}</div>
+            <div className="text-2xl font-bold tracking-tight">{formatPrice(overview.totalRevenue, overview.defaultCurrency)}</div>
             <p className="text-[10px] text-foreground/45 mt-0.5">Gross receipts earned</p>
           </CardContent>
         </Card>
@@ -204,7 +207,7 @@ export default function OrganizerDashboard() {
                   {/* Revenue Row */}
                   <div className="flex justify-between items-center text-foreground/75 font-light">
                     <span>Revenue:</span>
-                    <span className="font-semibold text-foreground">₹{event.revenue.toFixed(2)}</span>
+                    <span className="font-semibold text-foreground">{formatPrice(event.revenue, event.currency)}</span>
                   </div>
 
                   {/* Seat count */}

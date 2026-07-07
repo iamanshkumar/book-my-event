@@ -25,6 +25,7 @@ interface CreateEventInput{
     thumbnail? : string;
     trailerUrls? : string[];
     category? : EventCategory;
+    currency? : string;
     ticketTiers : TicketTierInput[];
 }
 export class EventService {
@@ -49,6 +50,7 @@ export class EventService {
                     trailerUrls : input.trailerUrls ?? undefined,
                     category : input.category ?? undefined,
                     status : "PUBLISHED",
+                    currency : input.currency ?? "INR",
                 }
             });
 

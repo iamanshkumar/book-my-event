@@ -19,6 +19,9 @@ model User {
   resetToken       String?   @map("reset_token") @db.VarChar(255)
   resetTokenExpiry DateTime? @map("reset_token_expiry")
 
+  allowedCurrencies Json?  @map("allowed_currencies")
+  defaultCurrency   String @default("INR") @map("default_currency") @db.VarChar(10)
+
   events   Event[]
   bookings Booking[]
 
@@ -47,6 +50,8 @@ model Event {
   category    EventCategory @default(OTHER)
   status      EventStatus   @default(DRAFT)
   createdAt   DateTime      @default(now()) @map("created_at")
+
+  currency String @default("INR") @db.VarChar(10)
 
   organizer   User         @relation(fields: [organizerId], references: [id], onDelete: Cascade)
   ticketTiers TicketTier[]
@@ -98,6 +103,7 @@ model Booking {
   totalPricePaid Decimal       @map("total_price_paid") @db.Decimal(10, 2)
   paymentStatus  PaymentStatus @default(PENDING) @map("payment_status")
   createdAt      DateTime      @default(now()) @map("created_at")
+  currency       String        @default("INR") @db.VarChar(10)
 
   user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   event      Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)

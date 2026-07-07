@@ -17,6 +17,7 @@ import {
   Info
 } from "lucide-react";
 import { toast } from "sonner";
+import { formatPrice } from "@/backend/lib/currency";
 
 interface Booking {
   id: number;
@@ -24,6 +25,7 @@ interface Booking {
   totalPricePaid: string;
   paymentStatus: "PENDING" | "SUCCESS" | "FAILED" | "REFUNDED";
   createdAt: string;
+  currency: string;
   event: {
     eventName: string;
     dateTime: string;
@@ -306,10 +308,10 @@ export default function TicketDetailsPage({ params }: { params: Promise<{ bookin
               Receipt Breakdown
             </h4>
 
-            <div className="space-y-2 text-xs text-foreground/70 font-light">
+             <div className="space-y-2 text-xs text-foreground/70 font-light">
               <div className="flex items-center justify-between">
                 <span>Base Price per Seat ({booking.ticketTier.tierName})</span>
-                <span className="font-medium text-foreground">₹{priceUnit.toFixed(2)}</span>
+                <span className="font-medium text-foreground">{formatPrice(priceUnit, booking.currency)}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span>Quantity</span>
@@ -317,18 +319,18 @@ export default function TicketDetailsPage({ params }: { params: Promise<{ bookin
               </div>
               <div className="flex items-center justify-between">
                 <span>Subtotal</span>
-                <span className="font-medium text-foreground">₹{subtotal.toFixed(2)}</span>
+                <span className="font-medium text-foreground">{formatPrice(subtotal, booking.currency)}</span>
               </div>
               {taxRate > 0 && (
                 <div className="flex items-center justify-between">
                   <span>VAT / Taxes ({taxRate}%)</span>
-                  <span className="font-medium text-foreground">₹{taxAmount.toFixed(2)}</span>
+                  <span className="font-medium text-foreground">{formatPrice(taxAmount, booking.currency)}</span>
                 </div>
               )}
               
               <div className="flex items-center justify-between pt-3 border-t border-border/40 font-bold text-sm text-foreground">
                 <span>Total Amount Paid</span>
-                <span>₹{grandTotal.toFixed(2)}</span>
+                <span>{formatPrice(grandTotal, booking.currency)}</span>
               </div>
             </div>
           </div>

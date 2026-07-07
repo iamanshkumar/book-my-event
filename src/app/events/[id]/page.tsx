@@ -19,6 +19,7 @@ import {
 import { toast } from "sonner";
 import countries from "i18n-iso-countries";
 import enLocale from "i18n-iso-countries/langs/en.json";
+import { formatPrice, getCurrencySymbol } from "@/backend/lib/currency";
 
 countries.registerLocale(enLocale);
 
@@ -43,6 +44,7 @@ interface Event {
   banner?: string;
   thumbnail?: string;
   trailerUrls?: string[];
+  currency: string;
   ticketTiers: TicketTier[];
   organizer: {
     id: number;
@@ -520,7 +522,7 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
                         >
                           {event.ticketTiers.map((tier) => (
                             <option key={tier.id} value={tier.id}>
-                              {tier.tierName} (₹{parseFloat(tier.pricePerSeatExcludingTax).toFixed(2)} • {tier.availableSeats} left)
+                              {tier.tierName} ({formatPrice(tier.pricePerSeatExcludingTax, event.currency)} • {tier.availableSeats} left)
                             </option>
                           ))}
                         </select>
@@ -556,12 +558,12 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
                       <div className="pt-4 border-t border-border/40 text-xs space-y-2 text-foreground/70">
                         <div className="flex items-center justify-between">
                           <span className="font-light">Subtotal</span>
-                          <span className="font-medium text-foreground">₹{subtotal.toFixed(2)}</span>
+                          <span className="font-medium text-foreground">{formatPrice(subtotal, event.currency)}</span>
                         </div>
                         {taxRate > 0 && (
                           <div className="flex items-center justify-between">
                             <span className="font-light">Tax / VAT ({taxRate}%)</span>
-                            <span className="font-medium text-foreground">₹{taxAmount.toFixed(2)}</span>
+                            <span className="font-medium text-foreground">{formatPrice(taxAmount, event.currency)}</span>
                           </div>
                         )}
                         <div className="flex items-center justify-between pt-2 border-t border-border/40 font-bold text-sm text-foreground">
@@ -569,7 +571,7 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
                             <Receipt className="h-4 w-4 text-foreground/50 stroke-[1.5]" />
                             <span>Grand Total</span>
                           </div>
-                          <span>₹{grandTotal.toFixed(2)}</span>
+                          <span>{formatPrice(grandTotal, event.currency)}</span>
                         </div>
                       </div>
                     </>

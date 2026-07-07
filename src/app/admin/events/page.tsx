@@ -14,6 +14,7 @@ import {
   AlertCircle
 } from "lucide-react";
 import { toast } from "sonner";
+import { formatPrice } from "@/backend/lib/currency";
 
 interface TicketTier {
   id: number;
@@ -30,6 +31,7 @@ interface Event {
   dateTime: string;
   duration: string;
   status: string;
+  currency: string;
   organizer: {
     name: string;
   };
@@ -106,12 +108,14 @@ export default function EventModerationPage() {
   });
 
   // Calculate pricing range for event tier labels
-  const getPriceRange = (tiers: TicketTier[]) => {
+  const getPriceRange = (tiers: TicketTier[], currency = "INR") => {
     if (!tiers || tiers.length === 0) return "N/A";
     const prices = tiers.map((t) => parseFloat(t.pricePerSeatExcludingTax));
     const min = Math.min(...prices);
     const max = Math.max(...prices);
-    return min === max ? `₹${min.toFixed(2)}` : `₹${min.toFixed(2)} - ₹${max.toFixed(2)}`;
+    return min === max 
+      ? formatPrice(min, currency) 
+      : `${formatPrice(min, currency)} - ${formatPrice(max, currency)}`;
   };
 
   return (
@@ -195,7 +199,7 @@ export default function EventModerationPage() {
 
                       {/* Price Range */}
                       <td className="py-4 px-4 font-semibold text-foreground/90">
-                        {getPriceRange(e.ticketTiers)}
+                        {getPriceRange(e.ticketTiers, e.currency)}
                       </td>
 
                       {/* Force Delete removal */}
@@ -229,7 +233,7 @@ export default function EventModerationPage() {
                   <div key={e.id} className="p-4 space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="font-mono text-[11px] text-foreground/50 font-medium">#{e.id}</span>
-                      <span className="font-semibold text-foreground/95 text-xs">{getPriceRange(e.ticketTiers)}</span>
+                      <span className="font-semibold text-foreground/95 text-xs">{getPriceRange(e.ticketTiers, e.currency)}</span>
                     </div>
                     <div className="space-y-1">
                       <div className="font-semibold text-foreground leading-snug">{e.eventName}</div>

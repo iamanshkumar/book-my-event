@@ -26,6 +26,7 @@ import {
   LogOut
 } from "lucide-react";
 import { toast } from "sonner";
+import { formatPrice } from "@/backend/lib/currency";
 import countries from "i18n-iso-countries";
 import enLocale from "i18n-iso-countries/langs/en.json";
 
@@ -56,6 +57,7 @@ interface Event {
   category?: string;
   country?: string;
   pincode?: string;
+  currency: string;
   ticketTiers: TicketTier[];
   organizer: {
     name: string;
@@ -89,7 +91,7 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState("ALL");
   const [searchCountry, setSearchCountry] = useState("ALL");
   const [searchPincode, setSearchPincode] = useState("");
-  const [sortBy, setSortBy] = useState("soonest"); // "soonest", "latest", "price-low", "price-high"
+  const [sortBy, setSortBy] = useState("soonest");
 
   // Dynamic branding settings
   const [websiteTitle, setWebsiteTitle] = useState("BookMyEvent");
@@ -143,7 +145,7 @@ export default function Home() {
       if (locationTerm) params.append("location", locationTerm);
       if (startDate) params.append("startDate", startDate);
       if (endDate) params.append("endDate", endDate);
-      
+
       const activeCat = catOverride !== undefined ? catOverride : selectedCategory;
       if (activeCat && activeCat !== "ALL") params.append("category", activeCat);
 
@@ -218,7 +220,7 @@ export default function Home() {
       });
       const data = await response.json();
       toast.success(data.message);
-      
+
       setUser(null);
       router.refresh();
     } catch (err: any) {
@@ -445,7 +447,7 @@ export default function Home() {
         </div>
 
         {/* Category Filter Pills Bar */}
-        <div 
+        <div
           className="flex gap-2.5 overflow-x-auto pt-5 mt-1 pb-1 select-none"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
@@ -460,11 +462,10 @@ export default function Home() {
                   setSelectedCategory(cat.id);
                   handleSearch(undefined, cat.id);
                 }}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-semibold border transition-all cursor-pointer whitespace-nowrap ${
-                  isSelected
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-semibold border transition-all cursor-pointer whitespace-nowrap ${isSelected
                     ? "bg-primary text-primary-foreground border-primary shadow-xs"
                     : "bg-card hover:bg-foreground/[0.02] text-foreground/70 hover:text-foreground border-border"
-                }`}
+                  }`}
               >
                 <IconComp className="h-3.5 w-3.5" />
                 {cat.label}
@@ -539,15 +540,15 @@ export default function Home() {
                   {/* Thumbnail Image Header block */}
                   <div className="h-40 w-full flex flex-col items-start justify-between p-4 border-b border-border/40 relative overflow-hidden">
                     {event.thumbnail ? (
-                      <img 
-                        src={event.thumbnail} 
-                        alt={event.eventName} 
+                      <img
+                        src={event.thumbnail}
+                        alt={event.eventName}
                         className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                       />
                     ) : (
                       <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent" />
                     )}
-                    
+
                     {/* Glassmorphic overlays to ensure text readability */}
                     <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent z-10" />
 
@@ -599,7 +600,7 @@ export default function Home() {
                     <div className="flex flex-col">
                       <span className="text-[9px] text-foreground/45 uppercase tracking-wider font-semibold">Price Starts From</span>
                       <span className="text-sm font-bold tracking-tight">
-                        {event.ticketTiers.length === 0 ? "Free" : `₹${lowestPrice.toFixed(2)}`}
+                        {event.ticketTiers.length === 0 ? "Free" : formatPrice(lowestPrice, event.currency)}
                       </span>
                     </div>
 

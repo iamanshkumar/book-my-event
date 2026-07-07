@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Card,
@@ -22,6 +22,7 @@ import {
 import { Label } from "@/components/ui/label";
 import countries from "i18n-iso-countries";
 import enLocale from "i18n-iso-countries/langs/en.json";
+import { getCurrencySymbol } from "@/backend/lib/currency";
 
 countries.registerLocale(enLocale);
 
@@ -95,6 +96,9 @@ export default function CreateEventPage() {
   const [uploadingCSV, setUploadingCSV] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [allowedCurrencies, setAllowedCurrencies] = useState<string[]>(["INR"]);
+  const [currency, setCurrency] = useState("INR");
 
   const handleUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -240,6 +244,7 @@ export default function CreateEventPage() {
           thumbnail: thumbnail || undefined,
           trailerUrls: trailerUrls.length > 0 ? trailerUrls : undefined,
           category,
+          currency,
           ticketTiers,
         }),
       });
@@ -376,6 +381,23 @@ export default function CreateEventPage() {
       setUploadingCSV(false);
     }
   };
+
+  useEffect(()=>{
+    async function getCurrencies(){
+      try{
+        const res = await fetch("/api/organizer/settings/currency");
+        const data = await res.json();
+
+        if(res.ok){
+          setAllowedCurrencies(data.allowedCurrencies || ["INR"]);
+          setCurrency(data.defaultCurrency || "INR");
+        }
+      }catch(err){
+      }
+    }
+
+    getCurrencies();
+  },[]);
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-10">
@@ -774,7 +796,7 @@ export default function CreateEventPage() {
                       </div>
                       <div className="flex items-center gap-3.5">
                         <span className="font-bold text-foreground">
-                          ₹{tier.price.toFixed(2)}
+                          {getCurrencySymbol(currency)}{tier.price.toFixed(2)}
                         </span>
                         <button
                           type="button"
@@ -839,7 +861,7 @@ export default function CreateEventPage() {
                     htmlFor="tierPrice"
                     className="text-xs font-semibold text-foreground/80"
                   >
-                    Base Price (₹)
+                    Base Price ({getCurrencySymbol(currency)})
                   </Label>
                   <Input
                     id="tierPrice"
@@ -868,6 +890,27 @@ export default function CreateEventPage() {
                   onChange={(e) => setTierTax(e.target.value)}
                   className="h-10 bg-transparent border-border rounded-md shadow-none text-xs"
                 />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-foreground/80">
+                  Event Currency *
+                </Label>
+                <Select
+                  value={currency}
+                  onValueChange={(val) => setCurrency(val)}
+                >
+                  <SelectTrigger className="h-10 bg-transparent border-border text-card-foreground text-sm">
+                    <SelectValue placeholder="Select Currency" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border-border">
+                    {allowedCurrencies.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <Button

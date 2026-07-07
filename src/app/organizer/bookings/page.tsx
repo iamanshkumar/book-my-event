@@ -13,6 +13,7 @@ import {
   AlertCircle
 } from "lucide-react";
 import { toast } from "sonner";
+import { formatPrice } from "@/backend/lib/currency";
 
 interface Booking {
   id: number;
@@ -20,6 +21,7 @@ interface Booking {
   totalPricePaid: string;
   paymentStatus: "PENDING" | "SUCCESS" | "FAILED" | "REFUNDED";
   createdAt: string;
+  currency: string;
   event: {
     eventName: string;
     dateTime: string;
@@ -196,7 +198,7 @@ export default function RegistrationLogPage() {
 
                     {/* Total Paid */}
                     <td className="py-4 px-4 font-semibold text-foreground/90">
-                      ₹{parseFloat(booking.totalPricePaid).toFixed(2)}
+                      {formatPrice(booking.totalPricePaid, booking.currency)}
                     </td>
 
                     {/* Booking Date */}
@@ -243,7 +245,7 @@ export default function RegistrationLogPage() {
                       Tier: <span className="font-medium text-foreground">{booking.ticketTier.tierName}</span> | Qty: <span className="font-medium text-foreground">{booking.quantity}</span>
                     </div>
                     <div className="text-[11px] text-foreground/60">
-                      Total Paid: <span className="font-semibold text-foreground">₹{parseFloat(booking.totalPricePaid).toFixed(2)}</span>
+                      Total Paid: <span className="font-semibold text-foreground">{formatPrice(booking.totalPricePaid, booking.currency)}</span>
                     </div>
                   </div>
                   <div className="flex items-center justify-between text-[10px] text-foreground/50">

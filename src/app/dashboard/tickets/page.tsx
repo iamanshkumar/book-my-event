@@ -6,6 +6,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription }
 import { Button } from "@/components/ui/button";
 import { Calendar, MapPin, Ticket, Loader2, QrCode, Clock } from "lucide-react";
 import { toast } from "sonner";
+import { formatPrice } from "@/backend/lib/currency";
 
 interface Booking {
   id: number;
@@ -13,6 +14,7 @@ interface Booking {
   totalPricePaid: string;
   quantity: number;
   createdAt: string;
+  currency: string;
   event: {
     eventName: string;
     dateTime: string;
@@ -127,7 +129,7 @@ export default function MyTicketsPage() {
               <CardFooter className="flex items-center justify-between border-t border-border/40 pt-4 pb-4 pl-6 mt-auto bg-foreground/5">
                 <div className="flex flex-col">
                   <span className="text-[10px] text-foreground/50 uppercase tracking-wider font-semibold">Total Paid</span>
-                  <span className="text-sm font-bold tracking-tight">₹{booking.totalPricePaid}</span>
+                  <span className="text-sm font-bold tracking-tight">{formatPrice(booking.totalPricePaid, booking.currency)}</span>
                 </div>
                 <Button 
                   variant="outline" 

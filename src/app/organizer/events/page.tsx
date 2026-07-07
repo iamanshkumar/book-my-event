@@ -17,6 +17,7 @@ import {
   Layers
 } from "lucide-react";
 import { toast } from "sonner";
+import { formatPrice } from "@/backend/lib/currency";
 
 interface TicketTier {
   id: number;
@@ -35,6 +36,7 @@ interface Event {
   dateTime: string;
   duration: string;
   status: string;
+  currency: string;
   ticketTiers: TicketTier[];
 }
 
@@ -205,7 +207,7 @@ export default function EventCatalogPage() {
                             <p className="text-[9px] text-foreground/50 mt-0.5">Seating capacity: {tier.availableSeats} / {tier.totalSeats}</p>
                           </div>
                           <div className="text-right">
-                            <p className="font-semibold text-foreground">₹{parseFloat(tier.pricePerSeatExcludingTax).toFixed(2)}</p>
+                            <p className="font-semibold text-foreground">{formatPrice(tier.pricePerSeatExcludingTax, event.currency)}</p>
                             {parseFloat(tier.taxPercentage) > 0 && (
                               <p className="text-[8px] text-foreground/45 mt-0.5">Tax: {tier.taxPercentage}%</p>
                             )}

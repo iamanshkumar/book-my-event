@@ -15,6 +15,7 @@ import {
   AlertCircle 
 } from "lucide-react";
 import { toast } from "sonner";
+import { formatPrice } from "@/backend/lib/currency";
 
 interface Booking {
   id: number;
@@ -22,6 +23,7 @@ interface Booking {
   totalPricePaid: string;
   paymentStatus: "PENDING" | "SUCCESS" | "FAILED" | "REFUNDED";
   createdAt: string;
+  currency: string;
   event: {
     eventName: string;
     dateTime: string;
@@ -128,7 +130,7 @@ export default function AttendeeDashboard() {
             <CreditCard className="h-4 w-4 text-foreground/30" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold tracking-tight">₹{totalSpent.toFixed(2)}</div>
+            <div className="text-2xl font-bold tracking-tight">{formatPrice(totalSpent, bookings[0]?.currency || "INR")}</div>
             <p className="text-[10px] text-foreground/45 mt-0.5">Successful payment value</p>
           </CardContent>
         </Card>
@@ -208,7 +210,7 @@ export default function AttendeeDashboard() {
                   <CardFooter className="p-4 px-5 flex items-center justify-between mt-auto bg-foreground/[0.01]">
                     <div className="flex flex-col">
                       <span className="text-[9px] text-foreground/45 uppercase tracking-wider font-semibold">Total Paid</span>
-                      <span className="text-sm font-bold tracking-tight">₹{parseFloat(booking.totalPricePaid).toFixed(2)}</span>
+                      <span className="text-sm font-bold tracking-tight">{formatPrice(booking.totalPricePaid, booking.currency)}</span>
                     </div>
 
                     <Button

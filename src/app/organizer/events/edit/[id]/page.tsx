@@ -11,6 +11,7 @@ import countries from "i18n-iso-countries";
 import enLocale from "i18n-iso-countries/langs/en.json";
 
 countries.registerLocale(enLocale);
+import { getCurrencySymbol } from "@/backend/lib/currency";
 
 const countriesObject = countries.getNames("en", { select: "official" });
 const countriesList = Object.entries(countriesObject).map(([alpha2, name]) => ({
@@ -59,6 +60,8 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
   const [category, setCategory] = useState("OTHER");
   const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
+  const [currency, setCurrency] = useState("INR");
+  const [allowedCurrencies, setAllowedCurrencies] = useState<string[]>(["INR"]);
 
   // Ticket Tiers State
   const [ticketTiers, setTicketTiers] = useState<TicketTier[]>([]);
@@ -134,6 +137,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
         setCategory(ev.category || "OTHER");
         setCountry(ev.country || "IND");
         setPincode(ev.pincode || "");
+        setCurrency(ev.currency || "INR");
 
         // Format date string correctly for <input type="datetime-local">
         if (ev.dateTime) {
@@ -164,6 +168,19 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
     }
     fetchEventDetails();
   }, [id]);
+
+  useEffect(() => {
+    async function getCurrencies() {
+      try {
+        const res = await fetch("/api/organizer/settings/currency");
+        const data = await res.json();
+        if (res.ok) {
+          setAllowedCurrencies(data.allowedCurrencies || ["INR"]);
+        }
+      } catch (err) {}
+    }
+    getCurrencies();
+  }, []);
 
   // Add a ticket tier dynamically
   const handleAddTier = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -263,6 +280,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
           thumbnail: thumbnail || null,
           trailerUrls: trailerUrls.length > 0 ? trailerUrls : null,
           category,
+          currency,
           ticketTiers: ticketTiers.map((tier) => ({
             tierName: tier.tierName,
             totalSeats: tier.totalSeats,
@@ -630,7 +648,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                           <p className="text-[9px] text-foreground/45 mt-0.5">Seats: {tier.availableSeats} / {tier.totalSeats} • Tax: {tier.taxPercentage}%</p>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="font-semibold text-foreground">₹{tier.pricePerSeatExcludingTax.toFixed(2)}</span>
+                          <span className="font-semibold text-foreground">{getCurrencySymbol(currency)}{tier.pricePerSeatExcludingTax.toFixed(2)}</span>
                           <button
                             type="button"
                             onClick={() => handleRemoveTier(index)}
@@ -676,7 +694,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label htmlFor="tierPrice" className="text-[10px] font-semibold text-foreground/80">Base Price (₹)</Label>
+                    <Label htmlFor="tierPrice" className="text-[10px] font-semibold text-foreground/80">Base Price ({getCurrencySymbol(currency)})</Label>
                     <Input
                       id="tierPrice"
                       type="number"
@@ -699,6 +717,23 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                     onChange={(e) => setTierTax(e.target.value)}
                     className="h-8.5 text-xs bg-transparent border-border rounded-md px-2.5 shadow-none placeholder:text-foreground/30 text-card-foreground"
                   />
+                </div>
+
+                {/* Event Currency */}
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-semibold text-foreground/80">Event Currency *</Label>
+                  <Select value={currency} onValueChange={setCurrency}>
+                    <SelectTrigger className="h-8.5 bg-transparent border-border text-card-foreground text-xs">
+                      <SelectValue placeholder="Select Currency" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-card border-border">
+                      {allowedCurrencies.map((c) => (
+                        <SelectItem key={c} value={c}>
+                          {c}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <Button
