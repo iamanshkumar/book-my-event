@@ -49,6 +49,11 @@ The application features a granular role-based access control system supporting 
 - **SMTP Settings:** Dynamic update panel for smtp server host, ports, and connection protocol details.
 - **Google reCAPTCHA Security:** Enables and disables secure CAPTCHA validation challenges on **Register Page** and **Forgot Password Page** client forms and server endpoints. Operates in Mock-validation mode when no site keys are registered.
 
+### 7. Multi-Currency Management & Localization
+- **Curated Currency Selection:** Organizers can choose up to 5 allowed currencies and designate 1 default currency inside a dedicated settings panel.
+- **Localized Symbols and Layouts:** Automatically presents dynamic localized currency symbols (e.g., `$`, `€`, `£`, `₹`) across the event discovery list, price starts from range labels, checkout receipts, and ticket booking passes.
+- **Bulk CSV Upload Template:** Includes standard template downloads with currency definitions so bulk-uploaded schedules write corresponding transactional currencies seamlessly.
+
 ---
 
 ## Technical Stack & Architecture
@@ -163,6 +168,10 @@ Open [http://localhost:3000](http://localhost:3000) in your web browser to acces
 
 ### 7. Public Configuration Settings
 - `GET /api/settings` - Returns public settings metadata (Website Title, Meta Title, Logo Image URL, Hero Headline, Captcha toggles, Site Key) for guest Discovery layouts and Auth pages.
+
+### 8. Custom Currency Configurations
+- `GET /api/organizer/settings/currency` - Fetch allowed currencies and default selected values configured on active profile.
+- `PUT /api/organizer/settings/currency` - Save modified arrays of preferred allowed currencies and set single default preferences.
 
 ---
 
