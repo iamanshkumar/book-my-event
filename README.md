@@ -17,9 +17,11 @@ The application features a granular role-based access control system supporting 
 - Search-engine-optimized dynamic metadata layout for Event Details page and static layouts for login, register, and dashboard portals.
 
 ### 2. Onboarding & Workspace Access
-- Separated registration flows for Attendees (`/register`) and Organizers (`/register/organizer`) to secure default privileges.
-- Unified "Back to Home" navigation links positioned consistently across all authentication and password-reset layouts.
-- Credentials toggle visibility switches for password entry forms.
+- **Separated Registration:** Distinct registration flows for Attendees (`/register`) and Organizers (`/register/organizer`) to secure default privileges.
+- **Organizer Email Verification:** Organizers receive a 6-digit verification code via Resend. Unverified organizers cannot create events, and accounts are automatically deleted after 24 hours of non-verification.
+- **Compulsory Address Registry:** Organizers must register their address location (entity type, street address, state, zip code, country, and contact phone number). Event creation is blocked if this information is incomplete.
+- **Visual Validation Layouts:** Displays warning banner blocks inside unverified or incomplete profiles.
+- **Credentials Switch:** Input toggle visibility switches on password fields.
 
 ### 3. Attendee Workspace (Customer Portal)
 - Comprehensive bookings transaction ledger displaying order history.
@@ -172,6 +174,11 @@ Open [http://localhost:3000](http://localhost:3000) in your web browser to acces
 ### 8. Custom Currency Configurations
 - `GET /api/organizer/settings/currency` - Fetch allowed currencies and default selected values configured on active profile.
 - `PUT /api/organizer/settings/currency` - Save modified arrays of preferred allowed currencies and set single default preferences.
+
+### 9. Organizer Verification & Address Details
+- `GET /api/auth/verify-email` - Validate 6-digit verification token for organizer registration.
+- `GET /api/organizer/settings/address` - Retrieve the registered address location details.
+- `PUT /api/organizer/settings/address` - Upsert (create or update) the organizer's address registry information.
 
 ---
 
