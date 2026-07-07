@@ -23,6 +23,7 @@ export async function GET(){
                 name : true,
                 email : true,
                 role : true,
+                isVerified: true,
                 createdAt : true
             }
         });

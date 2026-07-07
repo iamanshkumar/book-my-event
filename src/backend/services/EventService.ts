@@ -30,6 +30,14 @@ interface CreateEventInput{
 }
 export class EventService {
     static async createEventWithTiers(input : CreateEventInput){
+        const organizer = await prisma.user.findUnique({
+            where : {id : input.organizerId}
+        });
+
+        if(organizer?.role==="ORGANIZER" && !organizer.isVerified){
+            throw new Error("Your account must be verified before you can create events.");
+        }
+        
         if (input.country && (input.country.length !== 3 || !countries.isValid(input.country))) {
             throw new Error("Invalid country code. Please provide a valid 3-letter ISO code.");
         }

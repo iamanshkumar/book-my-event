@@ -77,6 +77,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const organizer = await prisma.user.findUnique({
+      where : {id : organizerId}
+    });
+
+    if (organizer?.role === "ORGANIZER" && !organizer.isVerified) {
+      return NextResponse.json(
+        {
+          error:
+            "Access denied. Your organizer account must be verified before you can upload events.",
+        },
+        { status: 403 },
+      );
+    }
+
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
 

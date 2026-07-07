@@ -1,6 +1,9 @@
 import { AuthService } from "@/backend/services/AuthService";
 import { NextResponse } from "next/server";
 import { getCaptchaSettings } from "@/backend/lib/settings";
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request : Request){
     try{
@@ -25,7 +28,7 @@ export async function POST(request : Request){
                 return NextResponse.json({ error: "Captcha verification failed. Please try again." }, { status: 400 });
               }
             }
-          }
+        }
 
         if(!name || !email || !password){
             return NextResponse.json({
@@ -45,12 +48,51 @@ export async function POST(request : Request){
 
         const user = await AuthService.registerUser(name , email , password , role ||"CUSTOMER");
 
-        return NextResponse.json({
-            message : "User registered successfully" , 
-            user
-        } , {
-            status : 201
-        });
+        if (role === "ORGANIZER" && (user as any).verificationToken) {
+          const verificationUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/verify-email?code=${(user as any).verificationToken}`;
+
+          try {
+            const emailRes = await resend.emails.send({
+              from: "BookMyEvent <onboarding@resend.dev>",
+              to: email,
+              subject: "Verify Your Organizer Account",
+              html: `
+                        <div style="font-family: sans-serif; padding: 25px; color: #333; max-width: 500px; border: 1px solid #eee; border-radius: 8px;">
+                            <h2 style="color: #4f46e5;">Welcome to BookMyEvent!</h2>
+                            <p>Please verify your organizer account to begin hosting and scheduling event listings.</p>
+                            <div style="margin: 30px 0; text-align: center;">
+                                <span style="font-size: 28px; font-weight: bold; letter-spacing: 6px; background-color: #f3f4f6; padding: 12px 24px; border-radius: 6px; color: #111827; display: inline-block;">
+                                    ${(user as any).verificationToken}
+                                </span>
+                            </div>
+                            <div style="margin: 20px 0; text-align: center;">
+                                <a href="${verificationUrl}" style="background-color: #4f46e5; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+                                    Click here to verify automatically
+                                </a>
+                            </div>
+                            <p style="font-size: 13px; color: #666; margin-top: 20px;">This code and link will expire in 24 hours. Unverified profiles are automatically removed after 24 hours.</p>
+                        </div>
+                    `,
+            });
+            if (emailRes.error) {
+              console.error("Resend API returned validation error:", emailRes.error);
+            } else {
+              console.log("Resend API successfully sent email:", emailRes.data);
+            }
+          } catch (emailError) {
+            console.error("Failed to send verification email:", emailError);
+          }
+        }
+        return NextResponse.json(
+          {
+            message:
+              role === "ORGANIZER"
+                ? "Account created successfully! Please check your email to verify your profile."
+                : "User registered successfully",
+            user,
+          },
+          { status: 201 },
+        );
         
     }catch(err : any){
         return NextResponse.json(

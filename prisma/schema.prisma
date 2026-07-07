@@ -19,6 +19,10 @@ model User {
   resetToken       String?   @map("reset_token") @db.VarChar(255)
   resetTokenExpiry DateTime? @map("reset_token_expiry")
 
+  isVerified              Boolean   @default(false) @map("is_verified")
+  verificationToken       String?   @map("verification_token") @db.VarChar(6)
+  verificationTokenExpiry DateTime? @map("verification_token_expiry")
+
   allowedCurrencies Json?  @map("allowed_currencies")
   defaultCurrency   String @default("INR") @map("default_currency") @db.VarChar(10)
 

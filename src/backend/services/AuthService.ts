@@ -14,20 +14,31 @@ export class AuthService{
         const salt = await bcrypt.genSalt(10);
         const passwordHash = await bcrypt.hash(passwordPlain , salt);
 
+        const isOrganizer = role === "ORGANIZER";
+        const verificationToken = isOrganizer ? Math.floor(100000 + Math.random() * 900000).toString() : null;
+        const verificationTokenExpiry = isOrganizer ? new Date(Date.now() + 24 * 60 * 60 * 1000) : null;
+
+        const isVerified = !isOrganizer;
+
         const newUser = await prisma.user.create({
-            data : {
-                name , 
-                email , 
-                passwordHash , 
-                role ,
-            },
-            select : {
-                id : true,
-                name : true,
-                email : true,
-                role : true,
-                createdAt : true
-            }
+          data: {
+            name,
+            email,
+            passwordHash,
+            role,
+            isVerified,
+            verificationToken,
+            verificationTokenExpiry,
+          },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            isVerified : true,
+            verificationToken : true,
+            createdAt: true,
+          },
         });
 
 

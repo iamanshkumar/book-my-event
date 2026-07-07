@@ -139,11 +139,14 @@ export default function OrganizerLayoutClient({ children }: { children: React.Re
                   </Button>
 
                   <Button 
+                    disabled={user && !user.isVerified}
                     variant={pathname === "/organizer/events/create" ? "secondary" : "ghost"} 
-                    className={`w-full justify-start gap-3 h-9.5 text-xs rounded-lg cursor-pointer border border-transparent transition-all ${
-                      pathname === "/organizer/events/create" 
-                        ? "bg-primary/10 text-primary border-primary/15 font-semibold" 
-                        : "text-foreground/60 hover:bg-foreground/[0.02] hover:text-foreground font-light"
+                    className={`w-full justify-start gap-3 h-9.5 text-xs rounded-lg border border-transparent transition-all ${
+                      user && !user.isVerified
+                        ? "opacity-50 cursor-not-allowed text-foreground/40"
+                        : pathname === "/organizer/events/create" 
+                          ? "bg-primary/10 text-primary border-primary/15 font-semibold cursor-pointer" 
+                          : "text-foreground/60 hover:bg-foreground/[0.02] hover:text-foreground font-light cursor-pointer"
                     }`} 
                     onClick={() => router.push("/organizer/events/create")}
                   >
@@ -228,6 +231,15 @@ export default function OrganizerLayoutClient({ children }: { children: React.Re
             </div>
           </header>
 
+          {user && user.role === "ORGANIZER" && !user.isVerified && (
+            <div className="bg-rose-500/10 border-b border-rose-500/20 text-rose-500 px-6 py-3 text-xs flex items-center justify-between font-normal shrink-0">
+              <span className="flex items-center gap-2">
+                <span className="font-semibold">⚠️ Unverified Account:</span>
+                <span>Please check your inbox for the verification email. You must verify your account to schedule events. Unverified profiles will be deleted 24 hours after signup.</span>
+              </span>
+            </div>
+          )}
+
           <main className="flex-1 overflow-y-auto p-4 md:p-8 max-w-7xl w-full mx-auto">
             {children}
           </main>
@@ -264,9 +276,12 @@ export default function OrganizerLayoutClient({ children }: { children: React.Re
           <span>Catalog</span>
         </button>
         <button
+          disabled={user && !user.isVerified}
           onClick={() => router.push("/organizer/events/create")}
-          className={`flex flex-col items-center gap-1 text-[10px] font-medium transition-all cursor-pointer ${
-            pathname === "/organizer/events/create" ? "text-primary" : "text-foreground/50"
+          className={`flex flex-col items-center gap-1 text-[10px] font-medium transition-all ${
+            user && !user.isVerified
+              ? "opacity-30 cursor-not-allowed text-foreground/40"
+              : pathname === "/organizer/events/create" ? "text-primary cursor-pointer" : "text-foreground/50 cursor-pointer"
           }`}
         >
           <PlusCircle className="h-5 w-5" />
