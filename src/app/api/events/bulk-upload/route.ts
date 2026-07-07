@@ -78,7 +78,8 @@ export async function POST(req: NextRequest) {
     }
 
     const organizer = await prisma.user.findUnique({
-      where : {id : organizerId}
+      where : {id : organizerId},
+      include: { address: true }
     });
 
     if (organizer?.role === "ORGANIZER" && !organizer.isVerified) {
@@ -87,6 +88,13 @@ export async function POST(req: NextRequest) {
           error:
             "Access denied. Your organizer account must be verified before you can upload events.",
         },
+        { status: 403 },
+      );
+    }
+
+    if (organizer?.role === "ORGANIZER" && !organizer.address) {
+      return NextResponse.json(
+        { error: "Your details are incomplete, please complete your details." },
         { status: 403 },
       );
     }

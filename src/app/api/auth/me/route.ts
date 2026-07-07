@@ -24,7 +24,12 @@ export async function GET(){
                 email : true,
                 role : true,
                 isVerified: true,
-                createdAt : true
+                createdAt : true,
+                address: {
+                    select: {
+                        id: true
+                    }
+                }
             }
         });
 

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Ticket, LogOut, Compass, Calendar, Sparkles, BarChart3, PlusCircle, ShieldCheck, Layers, Coins } from "lucide-react";
+import { Ticket, LogOut, Compass, Calendar, Sparkles, BarChart3, PlusCircle, ShieldCheck, Layers, Coins, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -139,10 +139,10 @@ export default function OrganizerLayoutClient({ children }: { children: React.Re
                   </Button>
 
                   <Button 
-                    disabled={user && !user.isVerified}
+                    disabled={user && (!user.isVerified || !user.address)}
                     variant={pathname === "/organizer/events/create" ? "secondary" : "ghost"} 
                     className={`w-full justify-start gap-3 h-9.5 text-xs rounded-lg border border-transparent transition-all ${
-                      user && !user.isVerified
+                      user && (!user.isVerified || !user.address)
                         ? "opacity-50 cursor-not-allowed text-foreground/40"
                         : pathname === "/organizer/events/create" 
                           ? "bg-primary/10 text-primary border-primary/15 font-semibold cursor-pointer" 
@@ -185,6 +185,19 @@ export default function OrganizerLayoutClient({ children }: { children: React.Re
                 >
                   <Coins className={`h-4 w-4 ${pathname === "/organizer/profile/currency" ? "text-primary" : "text-foreground/40"}`} />
                   Currency Settings
+                </Button>
+
+                <Button 
+                  variant={pathname === "/organizer/profile/address" ? "secondary" : "ghost"} 
+                  className={`w-full justify-start gap-3 h-9.5 text-xs rounded-lg cursor-pointer border border-transparent transition-all ${
+                    pathname === "/organizer/profile/address" 
+                      ? "bg-primary/10 text-primary border-primary/15 font-semibold" 
+                      : "text-foreground/60 hover:bg-foreground/[0.02] hover:text-foreground font-light"
+                  }`} 
+                  onClick={() => router.push("/organizer/profile/address")}
+                >
+                  <Home className={`h-4 w-4 ${pathname === "/organizer/profile/address" ? "text-primary" : "text-foreground/40"}`} />
+                  Address Details
                 </Button>
               </div>
             </div>
@@ -240,6 +253,23 @@ export default function OrganizerLayoutClient({ children }: { children: React.Re
             </div>
           )}
 
+          {user && user.role === "ORGANIZER" && user.isVerified && !user.address && (
+            <div className="bg-amber-500/10 border-b border-amber-500/20 text-amber-600 dark:text-amber-500 px-6 py-3 text-xs flex items-center justify-between font-normal shrink-0">
+              <span className="flex items-center gap-2">
+                <span className="font-semibold">⚠️ Incomplete Profile:</span>
+                <span>Your details are incomplete, please complete your details.</span>
+              </span>
+              <Button 
+                variant="link" 
+                size="sm" 
+                onClick={() => router.push("/organizer/profile/address")} 
+                className="text-amber-600 dark:text-amber-500 underline font-semibold p-0 h-auto text-xs hover:text-amber-700 cursor-pointer"
+              >
+                Fill Address Details
+              </Button>
+            </div>
+          )}
+
           <main className="flex-1 overflow-y-auto p-4 md:p-8 max-w-7xl w-full mx-auto">
             {children}
           </main>
@@ -276,10 +306,10 @@ export default function OrganizerLayoutClient({ children }: { children: React.Re
           <span>Catalog</span>
         </button>
         <button
-          disabled={user && !user.isVerified}
+          disabled={user && (!user.isVerified || !user.address)}
           onClick={() => router.push("/organizer/events/create")}
           className={`flex flex-col items-center gap-1 text-[10px] font-medium transition-all ${
-            user && !user.isVerified
+            user && (!user.isVerified || !user.address)
               ? "opacity-30 cursor-not-allowed text-foreground/40"
               : pathname === "/organizer/events/create" ? "text-primary cursor-pointer" : "text-foreground/50 cursor-pointer"
           }`}
@@ -304,6 +334,15 @@ export default function OrganizerLayoutClient({ children }: { children: React.Re
         >
           <Coins className="h-5 w-5" />
           <span>Currency</span>
+        </button>
+        <button
+          onClick={() => router.push("/organizer/profile/address")}
+          className={`flex flex-col items-center gap-1 text-[10px] font-medium transition-all cursor-pointer ${
+            pathname === "/organizer/profile/address" ? "text-primary" : "text-foreground/50"
+          }`}
+        >
+          <Home className="h-5 w-5" />
+          <span>Address</span>
         </button>
       </nav>
     </div>

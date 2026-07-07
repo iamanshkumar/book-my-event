@@ -31,11 +31,16 @@ interface CreateEventInput{
 export class EventService {
     static async createEventWithTiers(input : CreateEventInput){
         const organizer = await prisma.user.findUnique({
-            where : {id : input.organizerId}
+            where : {id : input.organizerId},
+            include: { address: true }
         });
 
         if(organizer?.role==="ORGANIZER" && !organizer.isVerified){
             throw new Error("Your account must be verified before you can create events.");
+        }
+
+        if(organizer?.role==="ORGANIZER" && !organizer.address){
+            throw new Error("Your details are incomplete, please complete your details.");
         }
         
         if (input.country && (input.country.length !== 3 || !countries.isValid(input.country))) {
