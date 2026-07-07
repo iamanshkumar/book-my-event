@@ -17,7 +17,7 @@ function parseCSV(text: string): string[][] {
       if (char === '"') {
         if (nextChar === '"') {
           cell += '"';
-          i++;
+          i++; 
         } else {
           inQuotes = false;
         }
@@ -114,7 +114,6 @@ export async function POST(req: NextRequest) {
     const priceIdx = getIndex("price_per_seat");
     const taxIdx = getIndex("tax_percentage");
 
-    // Validate headers
     if (
       nameIdx === -1 ||
       locIdx === -1 ||
@@ -133,6 +132,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Parse each row
     const dataRows = parsedRows.slice(1);
     const errors: string[] = [];
     const eventGroups: Record<
