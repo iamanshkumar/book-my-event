@@ -1,7 +1,5 @@
 import { prisma } from "../lib/prisma";
-import { Resend } from "resend";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { sendEmail } from "../lib/mail";
 
 interface CreateBookingInput {
     userId: number;
@@ -84,8 +82,7 @@ export class BookingService {
         });
 
         try {
-            await resend.emails.send({
-                from: "BookMyEvent <onboarding@resend.dev>",
+            await sendEmail({
                 to: result.user.email,
                 subject: `Your Booking Reservation for ${result.event.eventName}`,
                 html: `
@@ -105,7 +102,7 @@ export class BookingService {
         `
             });
         } catch (emailError) {
-            console.log("Resend API failed to dispatch message payload:", emailError);
+            console.log("Email service failed to dispatch message payload:", emailError);
         }
 
         return result;

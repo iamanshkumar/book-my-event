@@ -1,9 +1,7 @@
 import { prisma } from "@/backend/lib/prisma";
 import { NextResponse } from "next/server";
-import { Resend } from "resend";
 import { getCaptchaSettings } from "@/backend/lib/settings";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { sendEmail } from "@/backend/lib/mail";
 
 export async function POST(request: Request) {
   try {
@@ -75,23 +73,27 @@ export async function POST(request: Request) {
       },
     });
 
-    await resend.emails.send({
-      from: "BookMyEvent <onboarding@resend.dev>",
-      to: email,
-      subject: "Your Password Reset Code",
-      html: `
-              <div style="font-family: sans-serif; padding: 25px; color: #333; max-width: 500px; border: 1px solid #eee; border-radius: 8px;">
-                <h2 style="color: #10b981;">Password Reset Code</h2>
-                <p>Use the 6-digit verification code below to securely reset your password. Do not share this code with anyone.</p>
-                <div style="margin: 30px 0; text-align: center;">
-                  <span style="font-size: 32px; font-weight: bold; letter-spacing: 6px; background-color: #f3f4f6; padding: 12px 24px; border-radius: 6px; color: #111827;">
-                    ${resetCode}
-                  </span>
+    try {
+      await sendEmail({
+        to: email,
+        subject: "Your Password Reset Code",
+        html: `
+                <div style="font-family: sans-serif; padding: 25px; color: #333; max-width: 500px; border: 1px solid #eee; border-radius: 8px;">
+                  <h2 style="color: #10b981;">Password Reset Code</h2>
+                  <p>Use the 6-digit verification code below to securely reset your password. Do not share this code with anyone.</p>
+                  <div style="margin: 30px 0; text-align: center;">
+                    <span style="font-size: 32px; font-weight: bold; letter-spacing: 6px; background-color: #f3f4f6; padding: 12px 24px; border-radius: 6px; color: #111827;">
+                      ${resetCode}
+                    </span>
+                  </div>
+                  <p style="font-size: 13px; color: #666;">This verification code is single-use only and expires in 15 minutes.</p>
                 </div>
-                <p style="font-size: 13px; color: #666;">This verification code is single-use only and expires in 15 minutes.</p>
-              </div>
-            `,
-    });
+              `,
+      });
+      console.log("Password reset verification email dispatched successfully.");
+    } catch (emailError) {
+      console.error("Failed to send password reset verification email:", emailError);
+    }
 
     return NextResponse.json(
       {

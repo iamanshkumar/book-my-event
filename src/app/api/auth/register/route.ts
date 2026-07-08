@@ -1,9 +1,7 @@
 import { AuthService } from "@/backend/services/AuthService";
 import { NextResponse } from "next/server";
 import { getCaptchaSettings, getTermsSettings } from "@/backend/lib/settings";
-import { Resend } from "resend";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { sendEmail } from "@/backend/lib/mail";
 
 export async function POST(request : Request){
     try{
@@ -57,8 +55,7 @@ export async function POST(request : Request){
           const verificationUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/verify-email?code=${(user as any).verificationToken}`;
 
           try {
-            const emailRes = await resend.emails.send({
-              from: "BookMyEvent <onboarding@resend.dev>",
+            await sendEmail({
               to: email,
               subject: "Verify Your Organizer Account",
               html: `
@@ -79,11 +76,7 @@ export async function POST(request : Request){
                         </div>
                     `,
             });
-            if (emailRes.error) {
-              console.error("Resend API returned validation error:", emailRes.error);
-            } else {
-              console.log("Resend API successfully sent email:", emailRes.data);
-            }
+            console.log("Organizer verification email sent successfully.");
           } catch (emailError) {
             console.error("Failed to send verification email:", emailError);
           }
