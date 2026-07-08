@@ -15,10 +15,12 @@ The application features a granular role-based access control system supporting 
 - Horizontal Category Filter Pills Bar on the homepage with matching Lucide icons to browse events by Tech, Music, Sports, Movies, Comedy, Business, Arts, or Food & Drink categories.
 - Premium active teaser media player on checkout screens supporting multiple switching video trailers (YouTube, Instagram Reels, Vimeo, and raw HTML5 video files) with selector tabs.
 - Search-engine-optimized dynamic metadata layout for Event Details page and static layouts for login, register, and dashboard portals.
+- **Terms & Conditions Section:** Displays a custom terms & conditions layout block on the public event details screen when configured by the organizer.
 
 ### 2. Onboarding & Workspace Access
 - **Separated Registration:** Distinct registration flows for Attendees (`/register`) and Organizers (`/register/organizer`) to secure default privileges.
-- **Organizer Email Verification:** Organizers receive a 6-digit verification code via Resend. Unverified organizers cannot create events, and accounts are automatically deleted after 24 hours of non-verification.
+- **Signup Terms Enforcement:** Users must accept the global platform terms and conditions via a checkbox to register. Clicking the terms link opens a public terms reading page (`/terms`) in a separate browser tab.
+- **Organizer Email Verification:** Organizers receive a 6-digit verification code via the configured mail dispatcher. Unverified organizers cannot create events, and accounts are automatically deleted after 24 hours of non-verification.
 - **Compulsory Address Registry:** Organizers must register their address location (entity type, street address, state, zip code, country, and contact phone number). Event creation is blocked if this information is incomplete.
 - **Visual Validation Layouts:** Displays warning banner blocks inside unverified or incomplete profiles.
 - **Credentials Switch:** Input toggle visibility switches on password fields.
@@ -33,6 +35,9 @@ The application features a granular role-based access control system supporting 
 ### 4. Organizer Workspace
 - Analytics dashboard presenting total revenue summaries, global ticket sales counts, event publishing stats, and fill-rate loaders.
 - Managed event catalog containing listings, schedule details, locations, dynamic country dropdowns, and pincode settings.
+- **Minimum Age Checks:** Enforces age verification checks during manual creation, updating, and bulk CSV uploads.
+- **Event Terms & Conditions:** Supports adding customized event-level terms and conditions manually or via bulk CSV upload templates.
+- **UI Consistency:** The "Age Restrictions" and "Terms & Conditions" panels are aligned inside the event specifications card on both event creation and event update panels.
 - Drag-and-drop/select-file local upload widget for event banners and thumbnails, storing media securely on server storage.
 - Scheduling Wizard allowing organizers to configure ticket tiers with custom seat capacities, price configurations, and tax rates.
 - Editor panel providing specification updates, multiple trailer video link stacks, and category selection.
@@ -43,18 +48,19 @@ The application features a granular role-based access control system supporting 
 - Diagnostic logs and quick action widgets navigating to control modules.
 - User management panel filtering profiles and executing role privileges (CUSTOMER, ORGANIZER, ADMIN).
 - Event moderation interface allowing admins to audit hosted events and perform administrative removals.
-- Website settings control panel allowing admins to dynamically change general branding configurations, SMTP servers, and security verification switches.
+- Website settings control panel allowing admins to dynamically change general branding configurations, SMTP mailers, signup terms, and security verification switches.
 
-### 6. Dynamic Branding & CAPTCHA Security
+### 6. Dynamic Branding, Mail, & CAPTCHA Security
 - **General Branding:** Dynamically updates Website Title (branding name), Website Meta Title (SEO browser tab name), Hero Headline, and Website Logo.
 - **Dynamic favicon:** Automatically updates browser tab favicon to match the uploaded website logo.
-- **SMTP Settings:** Dynamic update panel for smtp server host, ports, and connection protocol details.
-- **Google reCAPTCHA Security:** Enables and disables secure CAPTCHA validation challenges on **Register Page** and **Forgot Password Page** client forms and server endpoints. Operates in Mock-validation mode when no site keys are registered.
+- **Signup Terms Management:** Dynamic subsettings view allowing admins to enable, disable, and modify the global Terms & Conditions content for registration.
+- **Dynamic SMTP Mailer:** Features a central mail dispatcher utilizing **Nodemailer** to route all platform notifications (bookings, OTPs, verifications) dynamically via any custom SMTP server (such as Mailtrap, Gmail, SES, etc.) configured in settings, falling back to the Resend API if host is default `"localhost"`.
+- **Multi-Type reCAPTCHA Security:** Enables and disables secure CAPTCHA validation challenges on **Register Page** and **Forgot Password Page** supporting three distinct versions (reCAPTCHA v3 Score-Based, reCAPTCHA v2 Checkbox, reCAPTCHA v2 Invisible Badge). Performs score validation (`score >= 0.5`) for v3 and operates in Mock mode when no site keys are registered.
 
 ### 7. Multi-Currency Management & Localization
 - **Curated Currency Selection:** Organizers can choose up to 5 allowed currencies and designate 1 default currency inside a dedicated settings panel.
 - **Localized Symbols and Layouts:** Automatically presents dynamic localized currency symbols (e.g., `$`, `€`, `£`, `₹`) across the event discovery list, price starts from range labels, checkout receipts, and ticket booking passes.
-- **Bulk CSV Upload Template:** Includes standard template downloads with currency definitions so bulk-uploaded schedules write corresponding transactional currencies seamlessly.
+- **Bulk CSV Upload Template:** Includes standard template downloads with currency, minimum age, and terms definitions so bulk-uploaded schedules write corresponding transactional values.
 
 ---
 
@@ -169,7 +175,7 @@ Open [http://localhost:3000](http://localhost:3000) in your web browser to acces
 - `PUT /api/admin/settings` - Save changes made to general branding, SMTP parameters, or security CAPTCHA preferences (requires ADMIN role).
 
 ### 7. Public Configuration Settings
-- `GET /api/settings` - Returns public settings metadata (Website Title, Meta Title, Logo Image URL, Hero Headline, Captcha toggles, Site Key) for guest Discovery layouts and Auth pages.
+- `GET /api/settings` - Returns public settings metadata (Website Title, Meta Title, Logo Image URL, Hero Headline, Captcha active types/keys, and Signup Terms details) for guest Discovery layouts and Auth pages.
 
 ### 8. Custom Currency Configurations
 - `GET /api/organizer/settings/currency` - Fetch allowed currencies and default selected values configured on active profile.
