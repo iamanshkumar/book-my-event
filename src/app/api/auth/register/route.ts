@@ -14,21 +14,33 @@ export async function POST(request : Request){
         }
 
         const captcha = await getCaptchaSettings();
+        const activeType = captcha.captchaTypeRegister || "NONE";
 
-        if (captcha.captchaEnabledRegister) {
+        if (activeType !== "NONE") {
             if (!recaptchaToken) {
               return NextResponse.json({ error: "Please complete captcha verification check." }, { status: 400 });
             }
-            // Verify token
-            if (captcha.captchaSecretKey && captcha.captchaSecretKey !== "MOCK") {
+            
+            let activeSecretKey = "";
+            if (activeType === "V3") activeSecretKey = captcha.captchaV3SecretKey;
+            else if (activeType === "V2_CHECKBOX") activeSecretKey = captcha.captchaV2CheckboxSiteKey ? captcha.captchaV2CheckboxSecretKey : "";
+            else if (activeType === "V2_INVISIBLE") activeSecretKey = captcha.captchaV2InvisibleSiteKey ? captcha.captchaV2InvisibleSecretKey : "";
+
+            const secret = activeSecretKey ? activeSecretKey.trim() : "";
+
+            if (secret && secret !== "MOCK" && recaptchaToken !== "MOCK_VALIDATION_TOKEN") {
               const res = await fetch("https://www.google.com/recaptcha/api/siteverify", {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: `secret=${captcha.captchaSecretKey}&response=${recaptchaToken}`,
+                body: `secret=${secret}&response=${recaptchaToken}`,
               });
               const result = await res.json();
               if (!result.success) {
                 return NextResponse.json({ error: "Captcha verification failed. Please try again." }, { status: 400 });
+              }
+
+              if (activeType === "V3" && result.score !== undefined && result.score < 0.5) {
+                return NextResponse.json({ error: "Spam verification check failed. Please refresh and try again." }, { status: 400 });
               }
             }
         }

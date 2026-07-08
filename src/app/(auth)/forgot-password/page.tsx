@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,17 +15,18 @@ export default function ForgotPasswordPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [captchaEnabled, setCaptchaEnabled] = useState(false);
+  const [captchaType, setCaptchaType] = useState("NONE");
   const [siteKey, setSiteKey] = useState("");
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const captchaRef = useRef<any>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     async function loadCaptchaConfig() {
       try {
         const res = await fetch("/api/settings");
         const data = await res.json();
-        setCaptchaEnabled(data.captchaEnabledForgotPassword);
-        setSiteKey(data.captchaSiteKey || "MOCK");
+        setCaptchaType(data.captchaTypeForgotPassword || "NONE");
+        setSiteKey(data.captchaSiteKeyForgotPassword || "MOCK");
       } catch (e) {
         // ignore
       }
@@ -37,21 +38,30 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
     if (!email) return;
 
-    if (captchaEnabled && !captchaToken) {
-      toast.error("Validation Required", {
-        description: "Please complete captcha verification check.",
-      });
-      return;
-    }
-
     setLoading(true);
     const toastId = toast.loading("Requesting password reset verification code...");
+
+    let activeToken = captchaToken;
+    if (captchaType !== "NONE") {
+      if ((captchaType === "V3" || captchaType === "V2_INVISIBLE") && captchaRef.current) {
+        activeToken = await captchaRef.current.execute();
+      }
+
+      if (!activeToken) {
+        toast.error("Validation Required", {
+          description: "Please complete captcha verification check.",
+        });
+        toast.dismiss(toastId);
+        setLoading(false);
+        return;
+      }
+    }
 
     try {
       const response = await fetch("/api/auth/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, recaptchaToken: captchaToken }),
+        body: JSON.stringify({ email, recaptchaToken: activeToken }),
       });
 
       const data = await response.json();
@@ -124,9 +134,11 @@ export default function ForgotPasswordPage() {
               />
             </div>
 
-            {captchaEnabled && (
-              <div className="pt-2">
+            {captchaType !== "NONE" && (
+              <div className="pt-2 flex justify-center">
                 <Captcha
+                  ref={captchaRef}
+                  type={captchaType}
                   siteKey={siteKey}
                   onChange={(token) => setCaptchaToken(token)}
                 />

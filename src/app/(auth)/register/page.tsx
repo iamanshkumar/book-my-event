@@ -1,6 +1,6 @@
 "use client";
 
-import { useState , useEffect } from "react";
+import { useState , useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -19,12 +19,14 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const [captchaEnabled, setCaptchaEnabled] = useState(false);
+  const [captchaType, setCaptchaType] = useState("NONE");
   const [siteKey, setSiteKey] = useState("");
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
   const [termsEnabled, setTermsEnabled] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
+  
+  const captchaRef = useRef<any>(null);
 
 
   useEffect(() => {
@@ -32,8 +34,8 @@ export default function RegisterPage() {
       try {
         const res = await fetch("/api/settings");
         const data = await res.json();
-        setCaptchaEnabled(data.captchaEnabledRegister);
-        setSiteKey(data.captchaSiteKey || "MOCK");
+        setCaptchaType(data.captchaTypeRegister || "NONE");
+        setSiteKey(data.captchaSiteKeyRegister || "MOCK");
         setTermsEnabled(data.signupTermsEnabled || false);
       } catch (e) {
         // ignore
@@ -47,13 +49,6 @@ export default function RegisterPage() {
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (captchaEnabled && !captchaToken) {
-      toast.error("Validation Required", {
-        description: "Please complete captcha verification check.",
-      });
-      return;
-    }
-
     if (termsEnabled && !acceptTerms) {
       toast.error("Terms & Conditions Required", {
         description: "You must accept the terms and conditions to register.",
@@ -63,11 +58,26 @@ export default function RegisterPage() {
 
     setLoading(true);
 
+    let activeToken = captchaToken;
+    if (captchaType !== "NONE") {
+      if ((captchaType === "V3" || captchaType === "V2_INVISIBLE") && captchaRef.current) {
+        activeToken = await captchaRef.current.execute();
+      }
+
+      if (!activeToken) {
+        toast.error("Validation Required", {
+          description: "Please complete captcha verification check.",
+        });
+        setLoading(false);
+        return;
+      }
+    }
+
     try {
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, role: "CUSTOMER", recaptchaToken: captchaToken, acceptTerms })
+        body: JSON.stringify({ name, email, password, role: "CUSTOMER", recaptchaToken: activeToken, acceptTerms })
       });
 
       const data = await response.json();
@@ -218,9 +228,11 @@ export default function RegisterPage() {
             )}
           </CardContent>
 
-          {captchaEnabled && (
-            <div className="my-4">
+          {captchaType !== "NONE" && (
+            <div className="my-4 flex justify-center">
               <Captcha
+                ref={captchaRef}
+                type={captchaType}
                 siteKey={siteKey}
                 onChange={(token) => setCaptchaToken(token)}
               />

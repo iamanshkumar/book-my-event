@@ -87,24 +87,36 @@ export async function getSmtpSettings(userId = 0) {
 export async function getCaptchaSettings(userId = 0) {
     const map = await getSettingsMap(userId);
 
-    const captchaEnabledRegister = map["captchaEnabledRegister"] === "true";
-    const captchaEnabledForgotPassword = map["captchaEnabledForgotPassword"] === "true";
-    const captchaSiteKey = map["captchaSiteKey"] !== undefined ? map["captchaSiteKey"] : "";
-    const captchaSecretKey = map["captchaSecretKey"] !== undefined ? map["captchaSecretKey"] : "";
+    const captchaTypeRegister = map["captchaTypeRegister"] !== undefined ? map["captchaTypeRegister"] : "NONE";
+    const captchaTypeForgotPassword = map["captchaTypeForgotPassword"] !== undefined ? map["captchaTypeForgotPassword"] : "NONE";
+    const captchaV3SiteKey = map["captchaV3SiteKey"] !== undefined ? map["captchaV3SiteKey"] : "";
+    const captchaV3SecretKey = map["captchaV3SecretKey"] !== undefined ? map["captchaV3SecretKey"] : "";
+    const captchaV2CheckboxSiteKey = map["captchaV2CheckboxSiteKey"] !== undefined ? map["captchaV2CheckboxSiteKey"] : "";
+    const captchaV2CheckboxSecretKey = map["captchaV2CheckboxSecretKey"] !== undefined ? map["captchaV2CheckboxSecretKey"] : "";
+    const captchaV2InvisibleSiteKey = map["captchaV2InvisibleSiteKey"] !== undefined ? map["captchaV2InvisibleSiteKey"] : "";
+    const captchaV2InvisibleSecretKey = map["captchaV2InvisibleSecretKey"] !== undefined ? map["captchaV2InvisibleSecretKey"] : "";
 
     // Write defaults to DB if not set
-    if (map["captchaEnabledRegister"] === undefined) await upsertSetting(userId, "captchaEnabledRegister", captchaEnabledRegister ? "true" : "false");
-    if (map["captchaEnabledForgotPassword"] === undefined) await upsertSetting(userId, "captchaEnabledForgotPassword", captchaEnabledForgotPassword ? "true" : "false");
-    if (map["captchaSiteKey"] === undefined) await upsertSetting(userId, "captchaSiteKey", captchaSiteKey);
-    if (map["captchaSecretKey"] === undefined) await upsertSetting(userId, "captchaSecretKey", captchaSecretKey);
+    if (map["captchaTypeRegister"] === undefined) await upsertSetting(userId, "captchaTypeRegister", captchaTypeRegister);
+    if (map["captchaTypeForgotPassword"] === undefined) await upsertSetting(userId, "captchaTypeForgotPassword", captchaTypeForgotPassword);
+    if (map["captchaV3SiteKey"] === undefined) await upsertSetting(userId, "captchaV3SiteKey", captchaV3SiteKey);
+    if (map["captchaV3SecretKey"] === undefined) await upsertSetting(userId, "captchaV3SecretKey", captchaV3SecretKey);
+    if (map["captchaV2CheckboxSiteKey"] === undefined) await upsertSetting(userId, "captchaV2CheckboxSiteKey", captchaV2CheckboxSiteKey);
+    if (map["captchaV2CheckboxSecretKey"] === undefined) await upsertSetting(userId, "captchaV2CheckboxSecretKey", captchaV2CheckboxSecretKey);
+    if (map["captchaV2InvisibleSiteKey"] === undefined) await upsertSetting(userId, "captchaV2InvisibleSiteKey", captchaV2InvisibleSiteKey);
+    if (map["captchaV2InvisibleSecretKey"] === undefined) await upsertSetting(userId, "captchaV2InvisibleSecretKey", captchaV2InvisibleSecretKey);
 
     return {
         id: 0,
         userId,
-        captchaEnabledRegister,
-        captchaEnabledForgotPassword,
-        captchaSiteKey,
-        captchaSecretKey
+        captchaTypeRegister,
+        captchaTypeForgotPassword,
+        captchaV3SiteKey,
+        captchaV3SecretKey,
+        captchaV2CheckboxSiteKey,
+        captchaV2CheckboxSecretKey,
+        captchaV2InvisibleSiteKey,
+        captchaV2InvisibleSecretKey
     };
 }
 
@@ -127,10 +139,14 @@ export async function updateSmtpSettings(userId = 0, data: any) {
 }
 
 export async function updateCaptchaSettings(userId = 0, data: any) {
-    await upsertSetting(userId, "captchaEnabledRegister", data.captchaEnabledRegister ? "true" : "false");
-    await upsertSetting(userId, "captchaEnabledForgotPassword", data.captchaEnabledForgotPassword ? "true" : "false");
-    await upsertSetting(userId, "captchaSiteKey", data.captchaSiteKey || "");
-    await upsertSetting(userId, "captchaSecretKey", data.captchaSecretKey || "");
+    await upsertSetting(userId, "captchaTypeRegister", data.captchaTypeRegister || "NONE");
+    await upsertSetting(userId, "captchaTypeForgotPassword", data.captchaTypeForgotPassword || "NONE");
+    await upsertSetting(userId, "captchaV3SiteKey", data.captchaV3SiteKey || "");
+    await upsertSetting(userId, "captchaV3SecretKey", data.captchaV3SecretKey || "");
+    await upsertSetting(userId, "captchaV2CheckboxSiteKey", data.captchaV2CheckboxSiteKey || "");
+    await upsertSetting(userId, "captchaV2CheckboxSecretKey", data.captchaV2CheckboxSecretKey || "");
+    await upsertSetting(userId, "captchaV2InvisibleSiteKey", data.captchaV2InvisibleSiteKey || "");
+    await upsertSetting(userId, "captchaV2InvisibleSecretKey", data.captchaV2InvisibleSecretKey || "");
     return getCaptchaSettings(userId);
 }
 

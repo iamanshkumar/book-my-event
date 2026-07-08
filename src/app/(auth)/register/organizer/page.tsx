@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import Captcha from "@/components/Captcha";
 
 export default function OrganizerRegisterPage() {
   const router = useRouter();
@@ -21,12 +22,19 @@ export default function OrganizerRegisterPage() {
   const [termsEnabled, setTermsEnabled] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
 
+  const [captchaType, setCaptchaType] = useState("NONE");
+  const [siteKey, setSiteKey] = useState("");
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const captchaRef = useRef<any>(null);
+
   useEffect(() => {
     async function loadConfig() {
       try {
         const res = await fetch("/api/settings");
         const data = await res.json();
         setTermsEnabled(data.signupTermsEnabled || false);
+        setCaptchaType(data.captchaTypeRegister || "NONE");
+        setSiteKey(data.captchaSiteKeyRegister || "MOCK");
       } catch (e) {
         // ignore
       }
@@ -46,11 +54,26 @@ export default function OrganizerRegisterPage() {
 
     setLoading(true);
 
+    let activeToken = captchaToken;
+    if (captchaType !== "NONE") {
+      if ((captchaType === "V3" || captchaType === "V2_INVISIBLE") && captchaRef.current) {
+        activeToken = await captchaRef.current.execute();
+      }
+
+      if (!activeToken) {
+        toast.error("Validation Required", {
+          description: "Please complete captcha verification check.",
+        });
+        setLoading(false);
+        return;
+      }
+    }
+
     try {
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, role: "ORGANIZER", acceptTerms })
+        body: JSON.stringify({ name, email, password, role: "ORGANIZER", acceptTerms, recaptchaToken: activeToken })
       });
 
       const data = await response.json();
@@ -188,6 +211,17 @@ export default function OrganizerRegisterPage() {
                     Terms & Conditions
                   </a>
                 </Label>
+              </div>
+            )}
+
+            {captchaType !== "NONE" && (
+              <div className="my-4 flex justify-center">
+                <Captcha
+                  ref={captchaRef}
+                  type={captchaType}
+                  siteKey={siteKey}
+                  onChange={(token) => setCaptchaToken(token)}
+                />
               </div>
             )}
           </CardContent>
