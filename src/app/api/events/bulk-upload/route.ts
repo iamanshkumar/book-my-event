@@ -133,6 +133,7 @@ export async function POST(req: NextRequest) {
     const catIdx = getIndex("category");
     const currencyIdx = getIndex("currency");
     const minAgeIdx = getIndex("minimum_age");
+    const termsIdx = getIndex("terms");
     const tierNameIdx = getIndex("tier_name");
     const seatsIdx = getIndex("total_seats");
     const priceIdx = getIndex("price_per_seat");
@@ -172,6 +173,7 @@ export async function POST(req: NextRequest) {
         category: EventCategory;
         currency: string;
         minimumAge: number | null;
+        terms: string | null;
         tiers: {
           tierName: string;
           totalSeats: number;
@@ -261,6 +263,8 @@ export async function POST(req: NextRequest) {
         }
       }
 
+      const terms = termsIdx !== -1 ? row[termsIdx]?.trim() || null : null;
+
       const groupKey = `${eventName.toLowerCase()}_${location.toLowerCase()}_${dateTime.getTime()}`;
 
       if (!eventGroups[groupKey]) {
@@ -275,6 +279,7 @@ export async function POST(req: NextRequest) {
           category,
           currency,
           minimumAge,
+          terms,
           tiers: [],
         };
       }
@@ -331,6 +336,7 @@ export async function POST(req: NextRequest) {
             currency: ev.currency,
             status: "PUBLISHED",
             minimumAge: ev.minimumAge,
+            terms: ev.terms,
           },
         });
 

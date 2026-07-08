@@ -59,6 +59,7 @@ model Event {
   currency String @default("INR") @db.VarChar(10)
 
   minimumAge Int? @map("minimum_age")
+  terms      String? @db.Text
 
   organizer   User         @relation(fields: [organizerId], references: [id], onDelete: Cascade)
   ticketTiers TicketTier[]

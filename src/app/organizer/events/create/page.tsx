@@ -66,6 +66,7 @@ export default function CreateEventPage() {
   // Event Specs State
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [terms, setTerms] = useState("");
   const [location, setLocation] = useState("");
   const [country, setCountry] = useState("IND");
   const [pincode, setPincode] = useState("");
@@ -249,7 +250,8 @@ export default function CreateEventPage() {
           category,
           currency,
           ticketTiers,
-          minimumAge : requiredMinimumAge ? Number(minimumAge) : null
+          minimumAge : requiredMinimumAge ? Number(minimumAge) : null,
+          terms: terms || undefined
         }),
       });
 
@@ -288,6 +290,7 @@ export default function CreateEventPage() {
       "category",
       "currency",
       "minimum_age",
+      "terms",
       "tier_name",
       "total_seats",
       "price_per_seat",
@@ -304,6 +307,7 @@ export default function CreateEventPage() {
       "MUSIC",
       "INR",
       "18",
+      "No refunds allowed. Age 18+ only.",
       "VIP Pass",
       "100",
       "2500.00",
@@ -320,6 +324,7 @@ export default function CreateEventPage() {
       "MUSIC",
       "INR",
       "18",
+      "No refunds allowed. Age 18+ only.",
       "General Admission",
       "1000",
       "500.00",
@@ -663,6 +668,23 @@ export default function CreateEventPage() {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   className="min-h-[120px] w-full bg-transparent border border-border rounded-md px-3 py-2 shadow-none focus-visible:ring-1 focus-visible:ring-ring focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder:text-foreground/30 text-card-foreground text-sm"
+                />
+              </div>
+
+              {/* Terms & Conditions */}
+              <div className="space-y-1.5">
+                <Label
+                  htmlFor="terms"
+                  className="text-xs font-semibold text-foreground/80 font-medium"
+                >
+                  Terms & Conditions
+                </Label>
+                <textarea
+                  id="terms"
+                  placeholder="Detail any terms, conditions, age policies, or cancellation rules for attendees..."
+                  value={terms}
+                  onChange={(e) => setTerms(e.target.value)}
+                  className="min-h-[100px] w-full bg-transparent border border-border rounded-md px-3 py-2 shadow-none focus-visible:ring-1 focus-visible:ring-ring focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder:text-foreground/30 text-card-foreground text-sm"
                 />
               </div>
 

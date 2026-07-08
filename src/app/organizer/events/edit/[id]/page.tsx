@@ -48,6 +48,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
   // Event Specs State
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [terms, setTerms] = useState("");
   const [location, setLocation] = useState("");
   const [country, setCountry] = useState("IND");
   const [pincode, setPincode] = useState("");
@@ -132,6 +133,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
         const ev = data.event;
         setName(ev.eventName || "");
         setDescription(ev.description || "");
+        setTerms(ev.terms || "");
         setLocation(ev.location || "");
         setDuration(ev.duration || "");
         setBanner(ev.banner || "");
@@ -297,6 +299,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
           category,
           currency,
           minimumAge: requiredMinimumAge ? Number(minimumAge) : null,
+          terms: terms || null,
           ticketTiers: ticketTiers.map((tier) => ({
             tierName: tier.tierName,
             totalSeats: tier.totalSeats,
@@ -545,6 +548,18 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   className="min-h-[120px] w-full bg-transparent border border-border rounded-md px-3 py-2 shadow-none focus-visible:ring-1 focus-visible:ring-ring focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder:text-foreground/30 text-card-foreground text-sm"
+                />
+              </div>
+
+              {/* Terms & Conditions */}
+              <div className="space-y-1.5">
+                <Label htmlFor="terms" className="text-xs font-semibold text-foreground/80 font-medium">Terms & Conditions</Label>
+                <textarea
+                  id="terms"
+                  placeholder="Detail any terms, conditions, age policies, or cancellation rules for attendees..."
+                  value={terms}
+                  onChange={(e) => setTerms(e.target.value)}
+                  className="min-h-[100px] w-full bg-transparent border border-border rounded-md px-3 py-2 shadow-none focus-visible:ring-1 focus-visible:ring-ring focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder:text-foreground/30 text-card-foreground text-sm"
                 />
               </div>
 

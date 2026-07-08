@@ -51,7 +51,8 @@ interface Event {
     name: string;
     email: string;
   };
-  minimumAge : number | null
+  minimumAge : number | null;
+  terms? : string | null;
 }
 
 export default function EventDetailsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -480,6 +481,18 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
                   "No description has been added for this event listing. Keep tabs for further details."}
               </p>
             </div>
+
+            {/* Terms & Conditions Section */}
+            {event.terms && (
+              <div className="space-y-3 bg-card border border-border p-6 rounded-xl shadow-xs">
+                <h3 className="text-lg font-bold tracking-tight border-b border-border/40 pb-2.5">
+                  Terms & Conditions
+                </h3>
+                <p className="text-xs text-foreground/80 leading-relaxed font-light whitespace-pre-wrap font-mono bg-foreground/[0.015] border border-border/30 rounded-lg p-4">
+                  {event.terms}
+                </p>
+              </div>
+            )}
 
             {/* Teaser & Trailer Section */}
             {event.trailerUrls &&
