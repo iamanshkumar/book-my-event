@@ -19,7 +19,7 @@ export async function POST(request : Request){
         const organizerId = parseInt(organizerIdStr , 10);
         const body = await request.json();
 
-        const {name , location , country, pincode, dateTime , duration , ticketTiers , description , banner , thumbnail, trailerUrls, category, currency} = body;
+        const {name , location , country, pincode, dateTime , duration , ticketTiers , description , banner , thumbnail, trailerUrls, category, currency , minimumAge} = body;
 
         if(!name || !location || !dateTime || !duration || !ticketTiers || !ticketTiers.length){
             return NextResponse.json({
@@ -43,7 +43,8 @@ export async function POST(request : Request){
             trailerUrls,
             category,
             currency,
-            ticketTiers
+            ticketTiers,
+            minimumAge : (minimumAge !== undefined && minimumAge !== null && minimumAge !== "") ? parseInt(String(minimumAge), 10) : null
         });
 
         return NextResponse.json({

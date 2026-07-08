@@ -132,6 +132,7 @@ export async function POST(req: NextRequest) {
     const durIdx = getIndex("duration");
     const catIdx = getIndex("category");
     const currencyIdx = getIndex("currency");
+    const minAgeIdx = getIndex("minimum_age");
     const tierNameIdx = getIndex("tier_name");
     const seatsIdx = getIndex("total_seats");
     const priceIdx = getIndex("price_per_seat");
@@ -170,6 +171,7 @@ export async function POST(req: NextRequest) {
         duration: string;
         category: EventCategory;
         currency: string;
+        minimumAge: number | null;
         tiers: {
           tierName: string;
           totalSeats: number;
@@ -246,6 +248,19 @@ export async function POST(req: NextRequest) {
       const rawCurrency = currencyIdx !== -1 ? row[currencyIdx]?.toUpperCase().trim() : "INR";
       const currency = rawCurrency || "INR";
 
+      let minimumAge: number | null = null;
+      if (minAgeIdx !== -1) {
+        const rawMinAge = row[minAgeIdx]?.trim();
+        if (rawMinAge) {
+          const parsedAge = parseInt(rawMinAge, 10);
+          if (isNaN(parsedAge) || parsedAge < 0) {
+            errors.push(`Row ${lineNum}: minimum_age must be a non-negative integer.`);
+            return;
+          }
+          minimumAge = parsedAge;
+        }
+      }
+
       const groupKey = `${eventName.toLowerCase()}_${location.toLowerCase()}_${dateTime.getTime()}`;
 
       if (!eventGroups[groupKey]) {
@@ -259,6 +274,7 @@ export async function POST(req: NextRequest) {
           duration,
           category,
           currency,
+          minimumAge,
           tiers: [],
         };
       }
@@ -314,6 +330,7 @@ export async function POST(req: NextRequest) {
             category: ev.category,
             currency: ev.currency,
             status: "PUBLISHED",
+            minimumAge: ev.minimumAge,
           },
         });
 

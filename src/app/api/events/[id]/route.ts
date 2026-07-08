@@ -76,7 +76,7 @@ export async function PUT(request : Request , context : RouteContext){
     }
 
     const body = await request.json();
-    const { eventName, description, location, country, pincode, dateTime, duration, banner, thumbnail, trailerUrls, category, currency, ticketTiers } = body;
+    const { eventName, description, location, country, pincode, dateTime, duration, banner, thumbnail, trailerUrls, category, currency, ticketTiers , minimumAge } = body;
 
     if (country && (country.length !== 3 || !countries.isValid(country))) {
         return NextResponse.json({
@@ -102,6 +102,7 @@ export async function PUT(request : Request , context : RouteContext){
                 trailerUrls : trailerUrls ?? null,
                 category : category ?? undefined,
                 currency : currency ?? undefined,
+                minimumAge : (minimumAge !== undefined && minimumAge !== null && minimumAge !== "") ? parseInt(String(minimumAge), 10) : null
             }
         });
 

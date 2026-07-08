@@ -76,6 +76,9 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [requiredMinimumAge , setRequiredMinimumAge] = useState(false);
+  const [minimumAge , setMinimumAge] = useState<number | "">("");
+
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: "thumbnail" | "banner") => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -139,6 +142,14 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
         setPincode(ev.pincode || "");
         setCurrency(ev.currency || "INR");
 
+        if (ev.minimumAge) {
+          setRequiredMinimumAge(true);
+          setMinimumAge(ev.minimumAge);
+        } else {
+          setRequiredMinimumAge(false);
+          setMinimumAge("");
+        }
+
         // Format date string correctly for <input type="datetime-local">
         if (ev.dateTime) {
           const dateObj = new Date(ev.dateTime);
@@ -181,6 +192,10 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
     }
     getCurrencies();
   }, []);
+
+  // useState(()=>{
+  //   if(originalEvent)
+  // })
 
   // Add a ticket tier dynamically
   const handleAddTier = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -281,6 +296,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
           trailerUrls: trailerUrls.length > 0 ? trailerUrls : null,
           category,
           currency,
+          minimumAge: requiredMinimumAge ? Number(minimumAge) : null,
           ticketTiers: ticketTiers.map((tier) => ({
             tierName: tier.tierName,
             totalSeats: tier.totalSeats,
@@ -481,6 +497,43 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                     <SelectItem value="OTHER">Other / Miscellaneous</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              {/* Age Restriction Configuration */}
+              <div className="space-y-4 border border-border p-4 rounded-lg bg-card/40">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <label className="text-xs font-semibold text-foreground">Age Restrictions</label>
+                    <p className="text-[10px] text-foreground/50">Restrict ticket booking validation to a minimum eligibility age</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    id="requireMinimumAge"
+                    checked={requiredMinimumAge}
+                    onChange={(e) => {
+                      setRequiredMinimumAge(e.target.checked);
+                      if (!e.target.checked) setMinimumAge("");
+                    }}
+                    className="h-4 w-4 rounded border-border text-primary focus:ring-primary/25 cursor-pointer"
+                  />
+                </div>
+
+                {requiredMinimumAge && (
+                  <div className="space-y-1.5 pt-2 border-t border-border/40 animate-in fade-in slide-in-from-top-1 duration-200">
+                    <label htmlFor="minimumAge" className="text-xs font-semibold text-foreground/80">Minimum Required Age (Years) *</label>
+                    <Input
+                      id="minimumAge"
+                      type="number"
+                      min="1"
+                      max="100"
+                      placeholder="e.g. 18"
+                      value={minimumAge}
+                      onChange={(e) => setMinimumAge(e.target.value ? parseInt(e.target.value, 10) : "")}
+                      required={requiredMinimumAge}
+                      className="h-10 bg-transparent border-border rounded-md px-3 text-card-foreground text-sm w-full"
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Description */}

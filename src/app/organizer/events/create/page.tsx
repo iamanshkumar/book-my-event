@@ -100,6 +100,9 @@ export default function CreateEventPage() {
   const [allowedCurrencies, setAllowedCurrencies] = useState<string[]>(["INR"]);
   const [currency, setCurrency] = useState("INR");
 
+  const [requiredMinimumAge , setRequiredMinimumAge] = useState(false);
+  const [minimumAge , setMinimumAge] = useState<number | "">("");
+
   const handleUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
     type: "thumbnail" | "banner",
@@ -246,6 +249,7 @@ export default function CreateEventPage() {
           category,
           currency,
           ticketTiers,
+          minimumAge : requiredMinimumAge ? Number(minimumAge) : null
         }),
       });
 
@@ -282,6 +286,8 @@ export default function CreateEventPage() {
       "date_time",
       "duration",
       "category",
+      "currency",
+      "minimum_age",
       "tier_name",
       "total_seats",
       "price_per_seat",
@@ -296,6 +302,8 @@ export default function CreateEventPage() {
       "2026-08-15T18:00:00Z",
       "6 hours",
       "MUSIC",
+      "INR",
+      "18",
       "VIP Pass",
       "100",
       "2500.00",
@@ -310,6 +318,8 @@ export default function CreateEventPage() {
       "2026-08-15T18:00:00Z",
       "6 hours",
       "MUSIC",
+      "INR",
+      "18",
       "General Admission",
       "1000",
       "500.00",
@@ -589,6 +599,56 @@ export default function CreateEventPage() {
                 </Select>
               </div>
 
+              {/* Age Restrictions */}
+              <div className="space-y-4 border border-border p-4 rounded-lg bg-card/40">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <label className="text-xs font-semibold text-foreground">
+                      Age Restrictions
+                    </label>
+                    <p className="text-[10px] text-foreground/50">
+                      Restrict ticket booking validation to a minimum eligibility
+                      age
+                    </p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    id="requireMinimumAge"
+                    checked={requiredMinimumAge}
+                    onChange={(e) => {
+                      setRequiredMinimumAge(e.target.checked);
+                      if (!e.target.checked) setMinimumAge("");
+                    }}
+                    className="h-4 w-4 rounded border-border text-primary focus:ring-primary/25 cursor-pointer"
+                  />
+                </div>
+                {requiredMinimumAge && (
+                  <div className="space-y-1.5 pt-2 border-t border-border/40 animate-in fade-in slide-in-from-top-1 duration-200">
+                    <label
+                      htmlFor="minimumAge"
+                      className="text-xs font-medium text-foreground/80"
+                    >
+                      Minimum Required Age (Years) *
+                    </label>
+                    <Input
+                      id="minimumAge"
+                      type="number"
+                      min="1"
+                      max="100"
+                      placeholder="e.g. 18"
+                      value={minimumAge}
+                      onChange={(e) =>
+                        setMinimumAge(
+                          e.target.value ? parseInt(e.target.value, 10) : "",
+                        )
+                      }
+                      required={requiredMinimumAge}
+                      className="h-10 bg-transparent border-border rounded-md px-3 text-card-foreground text-sm w-full"
+                    />
+                  </div>
+                )}
+              </div>
+
               {/* Description */}
               <div className="space-y-1.5">
                 <Label
@@ -796,7 +856,8 @@ export default function CreateEventPage() {
                       </div>
                       <div className="flex items-center gap-3.5">
                         <span className="font-bold text-foreground">
-                          {getCurrencySymbol(currency)}{tier.price.toFixed(2)}
+                          {getCurrencySymbol(currency)}
+                          {tier.price.toFixed(2)}
                         </span>
                         <button
                           type="button"

@@ -51,6 +51,7 @@ interface Event {
     name: string;
     email: string;
   };
+  minimumAge : number | null
 }
 
 export default function EventDetailsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -72,32 +73,61 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
   const [bookingInProgress, setBookingInProgress] = useState(false);
   const [activeTrailerIndex, setActiveTrailerIndex] = useState(0);
 
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST"
+      });
+      const data = await response.json();
+      toast.success(data.message || "Logged out successfully!");
+      setUser(null);
+      router.refresh();
+    } catch (err: any) {
+      toast.error("Logout failed", {
+        description: err.message,
+      });
+    }
+  };
+
   const getVideoSource = (url?: string) => {
     if (!url) return null;
+    const cleanUrl = url.trim();
 
     // 1. YouTube Match
-    const ytReg = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-    const ytMatch = url.match(ytReg);
-    if (ytMatch && ytMatch[2].length === 11) {
-      return { type: "embed", url: `https://www.youtube.com/embed/${ytMatch[2]}` };
+    if (cleanUrl.includes("youtube.com") || cleanUrl.includes("youtu.be")) {
+      let videoId = "";
+      if (cleanUrl.includes("watch?v=")) {
+        videoId = cleanUrl.split("watch?v=")[1]?.split("&")[0] || "";
+      } else if (cleanUrl.includes("youtu.be/")) {
+        videoId = cleanUrl.split("youtu.be/")[1]?.split("?")[0] || "";
+      } else if (cleanUrl.includes("embed/")) {
+        videoId = cleanUrl.split("embed/")[1]?.split("?")[0] || "";
+      }
+      if (videoId && videoId.length === 11) {
+        return { type: "embed", url: `https://www.youtube.com/embed/${videoId}` };
+      }
     }
 
     // 2. Instagram Match (post, reel, tv)
-    const igReg = /(?:instagram\.com)\/(?:p|reel|tv)\/([a-zA-Z0-9_-]+)/;
-    const igMatch = url.match(igReg);
-    if (igMatch && igMatch[1]) {
-      return { type: "embed", url: `https://www.instagram.com/reel/${igMatch[1]}/embed/` };
+    if (cleanUrl.includes("instagram.com")) {
+      const igMatch = cleanUrl.match(/(?:instagram\.com)\/(?:p|reel|tv)\/([a-zA-Z0-9_-]+)/);
+      if (igMatch && igMatch[1]) {
+        return { type: "embed", url: `https://www.instagram.com/reel/${igMatch[1]}/embed/` };
+      }
     }
 
     // 3. Vimeo Match
-    const vimeoReg = /(?:vimeo\.com)\/([0-9]+)/;
-    const vimeoMatch = url.match(vimeoReg);
-    if (vimeoMatch && vimeoMatch[1]) {
-      return { type: "embed", url: `https://player.vimeo.com/video/${vimeoMatch[1]}` };
+    if (cleanUrl.includes("vimeo.com")) {
+      const vimeoMatch = cleanUrl.match(/(?:vimeo\.com)\/([0-9]+)/);
+      if (vimeoMatch && vimeoMatch[1]) {
+        return { type: "embed", url: `https://player.vimeo.com/video/${vimeoMatch[1]}` };
+      }
     }
 
     // 4. Default direct video file
-    return { type: "direct", url };
+    return { type: "direct", url: cleanUrl };
   };
 
   // 1. Check user authentication state client-side
@@ -178,6 +208,13 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
 
     if (!selectedTierId) {
       toast.error("Please select a ticket tier.");
+      return;
+    }
+
+    if(event?.minimumAge && !ageConfirmed){
+      toast.error("Age confirmation required", {
+        description: `Please confirm that you meet the minimum age requirement of ${event.minimumAge} years.`,
+      });
       return;
     }
 
@@ -290,21 +327,32 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
       {/* 1. Header Navigation */}
       <header className="sticky top-0 z-50 backdrop-blur-md bg-background/80 border-b border-border/40">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => router.push("/")}>
+          <div
+            className="flex items-center gap-2 cursor-pointer"
+            onClick={() => router.push("/")}
+          >
             <Calendar className="h-5 w-5 text-primary" />
-            <span className="font-semibold tracking-tight text-lg">BookMyEvent</span>
+            <span className="font-semibold tracking-tight text-lg">
+              BookMyEvent
+            </span>
           </div>
 
           <div className="flex items-center gap-6">
             <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-foreground/75">
-              <span className="hover:text-foreground cursor-pointer transition-colors" onClick={() => router.push("/")}>Discover</span>
+              <span
+                className="hover:text-foreground cursor-pointer transition-colors"
+                onClick={() => router.push("/")}
+              >
+                Discover
+              </span>
               {authChecked && user && (
-                <span 
+                <span
                   className="hover:text-foreground cursor-pointer transition-colors"
                   onClick={() => {
                     const r = user.role;
                     if (r === "ADMIN") router.push("/admin/dashboard");
-                    else if (r === "ORGANIZER") router.push("/organizer/dashboard");
+                    else if (r === "ORGANIZER")
+                      router.push("/organizer/dashboard");
                     else router.push("/dashboard");
                   }}
                 >
@@ -315,38 +363,33 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
 
             <div className="flex items-center gap-3">
               <ThemeToggle />
-              
-              {authChecked && (
-                user ? (
-                  <Button 
-                    onClick={() => {
-                      const r = user.role;
-                      if (r === "ADMIN") router.push("/admin/dashboard");
-                      else if (r === "ORGANIZER") router.push("/organizer/dashboard");
-                      else router.push("/dashboard");
-                    }}
-                    className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 text-xs font-semibold rounded-md shadow-sm transition-all"
+
+              {authChecked &&
+                (user ? (
+                  <Button
+                    onClick={handleLogout}
+                    variant="destructive"
+                    className="bg-destructive hover:bg-destructive/90 text-destructive-foreground h-9 px-4 text-xs font-semibold rounded-md shadow-sm transition-all cursor-pointer"
                   >
-                    Go to Dashboard
+                    Logout
                   </Button>
                 ) : (
                   <>
-                    <Button 
-                      variant="ghost" 
+                    <Button
+                      variant="ghost"
                       onClick={() => router.push("/login")}
                       className="h-9 px-3 text-xs font-medium rounded-md hover:bg-foreground/5"
                     >
                       Sign In
                     </Button>
-                    <Button 
+                    <Button
                       onClick={() => router.push("/register")}
                       className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 text-xs font-semibold rounded-md shadow-sm transition-all"
                     >
                       Sign Up
                     </Button>
                   </>
-                )
-              )}
+                ))}
             </div>
           </div>
         </div>
@@ -355,8 +398,8 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
       {/* 2. Main Page Grid Canvas */}
       <main className="flex-grow max-w-7xl mx-auto w-full px-6 py-8">
         {/* Back Link */}
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           onClick={() => router.push("/")}
           className="mb-6 h-8 text-xs text-foreground/60 hover:text-foreground hover:bg-foreground/5 px-2 -ml-2 rounded-md gap-1 transition-all"
         >
@@ -371,9 +414,9 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
             {/* Banner block */}
             <div className="h-64 sm:h-96 w-full rounded-xl flex flex-col justify-end p-6 border border-border/40 relative overflow-hidden shadow-xs">
               {event.banner ? (
-                <img 
-                  src={event.banner} 
-                  alt={event.eventName} 
+                <img
+                  src={event.banner}
+                  alt={event.eventName}
                   className="absolute inset-0 h-full w-full object-cover"
                 />
               ) : (
@@ -386,7 +429,18 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
               <div className="absolute top-4 right-4 bg-background/80 backdrop-blur-md text-[10px] text-primary border border-primary/20 px-2.5 py-1 rounded-sm uppercase tracking-wider z-20 font-semibold">
                 {event.status}
               </div>
-              
+
+              <div className="absolute top-4 right-4 flex items-center gap-2 z-20">
+                {event.minimumAge && (
+                  <div className="bg-amber-500 text-white text-[10px] border border-amber-600 px-2 py-0.5 rounded-sm uppercase tracking-wider font-extrabold flex items-center gap-1 shadow-sm">
+                    <span>{event.minimumAge}+</span>
+                  </div>
+                )}
+                <div className="bg-background/80 backdrop-blur-md text-[10px] text-primary border border-primary/20 px-2.5 py-1 rounded-sm uppercase tracking-wider font-semibold">
+                  {event.status}
+                </div>
+              </div>
+
               <div className="space-y-2 z-20">
                 <div className="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider text-primary px-2 py-0.5 bg-primary/10 rounded-sm">
                   <Sparkles className="h-3 w-3" />
@@ -404,69 +458,82 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
                 {event.organizer?.name?.charAt(0).toUpperCase() || "O"}
               </div>
               <div>
-                <p className="text-[10px] text-foreground/45 uppercase tracking-wider font-semibold">Host / Organizer</p>
-                <p className="text-sm font-semibold text-foreground">{event.organizer?.name || "Verified Event Host"}</p>
-                <p className="text-xs text-foreground/50">{event.organizer?.email}</p>
+                <p className="text-[10px] text-foreground/45 uppercase tracking-wider font-semibold">
+                  Host / Organizer
+                </p>
+                <p className="text-sm font-semibold text-foreground">
+                  {event.organizer?.name || "Verified Event Host"}
+                </p>
+                <p className="text-xs text-foreground/50">
+                  {event.organizer?.email}
+                </p>
               </div>
             </div>
 
             {/* Long details */}
             <div className="space-y-3 bg-card border border-border p-6 rounded-xl shadow-xs">
-              <h3 className="text-lg font-bold tracking-tight border-b border-border/40 pb-2.5">About the Event</h3>
+              <h3 className="text-lg font-bold tracking-tight border-b border-border/40 pb-2.5">
+                About the Event
+              </h3>
               <p className="text-sm text-foreground/80 leading-relaxed font-light whitespace-pre-wrap">
-                {event.description || "No description has been added for this event listing. Keep tabs for further details."}
+                {event.description ||
+                  "No description has been added for this event listing. Keep tabs for further details."}
               </p>
             </div>
 
             {/* Teaser & Trailer Section */}
-            {event.trailerUrls && event.trailerUrls.length > 0 && (() => {
-              const activeUrl = event.trailerUrls[activeTrailerIndex];
-              const video = getVideoSource(activeUrl);
-              if (!video) return null;
-              return (
-                <div className="space-y-3 bg-card border border-border p-6 rounded-xl shadow-xs">
-                  <h3 className="text-lg font-bold tracking-tight border-b border-border/40 pb-2.5">Event Teasers & Trailers</h3>
-                  <div className="overflow-hidden rounded-xl border border-border/40 bg-black aspect-video relative shadow-xs">
-                    {video.type === "embed" ? (
-                      <iframe
-                        src={video.url}
-                        title={`Event Teaser Trailer ${activeTrailerIndex + 1}`}
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                        className="w-full h-full border-0 absolute inset-0"
-                      />
-                    ) : (
-                      <video
-                        src={video.url}
-                        controls
-                        preload="metadata"
-                        className="w-full h-full object-contain"
-                      />
+            {event.trailerUrls &&
+              event.trailerUrls.length > 0 &&
+              (() => {
+                const activeUrl = event.trailerUrls[activeTrailerIndex];
+                const video = getVideoSource(activeUrl);
+                if (!video) return null;
+                return (
+                  <div className="space-y-3 bg-card border border-border p-6 rounded-xl shadow-xs">
+                    <h3 className="text-lg font-bold tracking-tight border-b border-border/40 pb-2.5">
+                      Event Teasers & Trailers
+                    </h3>
+                    <div className="overflow-hidden rounded-xl border border-border/40 bg-black aspect-video relative shadow-xs">
+                      {video.type === "embed" ? (
+                        <iframe
+                          src={video.url}
+                          title={`Event Teaser Trailer ${activeTrailerIndex + 1}`}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                          className="w-full h-full border-0 absolute inset-0"
+                        />
+                      ) : (
+                        <video
+                          src={video.url}
+                          controls
+                          preload="metadata"
+                          className="w-full h-full object-contain"
+                        />
+                      )}
+                    </div>
+
+                    {/* Dynamic selection tabs below player */}
+                    {event.trailerUrls.length > 1 && (
+                      <div className="flex gap-2 overflow-x-auto pb-1 mt-2 scrollbar-none select-none">
+                        {event.trailerUrls.map((_, index) => (
+                          <button
+                            key={index}
+                            type="button"
+                            onClick={() => setActiveTrailerIndex(index)}
+                            className={`px-3 py-1.5 rounded-lg text-[10px] font-semibold uppercase tracking-wider border transition-all cursor-pointer ${
+                              activeTrailerIndex === index
+                                ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                                : "bg-background hover:bg-foreground/[0.03] text-foreground/60 hover:text-foreground border-border/80"
+                            }`}
+                          >
+                            Teaser {index + 1}
+                          </button>
+                        ))}
+                      </div>
                     )}
                   </div>
-
-                  {/* Dynamic selection tabs below player */}
-                  {event.trailerUrls.length > 1 && (
-                    <div className="flex gap-2 overflow-x-auto pb-1 mt-2 scrollbar-none select-none">
-                      {event.trailerUrls.map((_, index) => (
-                        <button
-                          key={index}
-                          type="button"
-                          onClick={() => setActiveTrailerIndex(index)}
-                          className={`px-3 py-1.5 rounded-lg text-[10px] font-semibold uppercase tracking-wider border transition-all cursor-pointer ${
-                            activeTrailerIndex === index
-                              ? "bg-primary text-primary-foreground border-primary shadow-xs"
-                              : "bg-background hover:bg-foreground/[0.03] text-foreground/60 hover:text-foreground border-border/80"
-                          }`}
-                        >
-                          Teaser {index + 1}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })()}
+                );
+              })()}
           </div>
 
           {/* RIGHT: Booking Action Panel */}
@@ -474,23 +541,33 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
             <div className="md:sticky md:top-24 space-y-6">
               <Card className="border border-border bg-card shadow-xs rounded-xl overflow-hidden">
                 <CardHeader className="bg-foreground/[0.01] border-b border-border/40 p-6 space-y-4">
-                  <CardTitle className="text-base font-bold tracking-tight">Access & Tickets</CardTitle>
-                  <CardDescription className="text-xs font-light text-foreground/60">Choose your ticket tier and reserve seats.</CardDescription>
+                  <CardTitle className="text-base font-bold tracking-tight">
+                    Access & Tickets
+                  </CardTitle>
+                  <CardDescription className="text-xs font-light text-foreground/60">
+                    Choose your ticket tier and reserve seats.
+                  </CardDescription>
 
                   {/* Metadata Specs */}
                   <div className="grid grid-cols-2 gap-3 text-xs pt-2">
                     <div className="flex items-center gap-2 text-foreground/80 bg-background/50 border border-border/40 p-2.5 rounded-lg">
                       <Calendar className="h-4 w-4 text-primary" />
                       <div>
-                        <p className="text-[9px] uppercase text-foreground/40 font-semibold">Date</p>
-                        <p className="font-semibold">{new Date(event.dateTime).toLocaleDateString()}</p>
+                        <p className="text-[9px] uppercase text-foreground/40 font-semibold">
+                          Date
+                        </p>
+                        <p className="font-semibold">
+                          {new Date(event.dateTime).toLocaleDateString()}
+                        </p>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2 text-foreground/80 bg-background/50 border border-border/40 p-2.5 rounded-lg">
                       <Clock className="h-4 w-4 text-primary" />
                       <div>
-                        <p className="text-[9px] uppercase text-foreground/40 font-semibold">Duration</p>
+                        <p className="text-[9px] uppercase text-foreground/40 font-semibold">
+                          Duration
+                        </p>
                         <p className="font-semibold">{event.duration}</p>
                       </div>
                     </div>
@@ -498,10 +575,13 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
                     <div className="col-span-2 flex items-center gap-2 text-foreground/80 bg-background/50 border border-border/40 p-2.5 rounded-lg">
                       <MapPin className="h-4 w-4 text-primary shrink-0" />
                       <div>
-                        <p className="text-[9px] uppercase text-foreground/40 font-semibold">Location / Venue</p>
+                        <p className="text-[9px] uppercase text-foreground/40 font-semibold">
+                          Location / Venue
+                        </p>
                         <p className="font-semibold text-xs">
                           {event.location}
-                          {event.country && `, ${countries.getName(event.country, "en") || event.country}`}
+                          {event.country &&
+                            `, ${countries.getName(event.country, "en") || event.country}`}
                           {event.pincode && ` (Pincode: ${event.pincode})`}
                         </p>
                       </div>
@@ -514,15 +594,24 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
                     <>
                       {/* Ticket Tier selector */}
                       <div className="space-y-1.5">
-                        <label className="text-[10px] uppercase font-bold tracking-wider text-foreground/50">Select Ticket Tier</label>
+                        <label className="text-[10px] uppercase font-bold tracking-wider text-foreground/50">
+                          Select Ticket Tier
+                        </label>
                         <select
                           value={selectedTierId || ""}
-                          onChange={(e) => handleTierChange(parseInt(e.target.value, 10))}
+                          onChange={(e) =>
+                            handleTierChange(parseInt(e.target.value, 10))
+                          }
                           className="w-full bg-background border border-border text-foreground text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all shadow-none"
                         >
                           {event.ticketTiers.map((tier) => (
                             <option key={tier.id} value={tier.id}>
-                              {tier.tierName} ({formatPrice(tier.pricePerSeatExcludingTax, event.currency)} • {tier.availableSeats} left)
+                              {tier.tierName} (
+                              {formatPrice(
+                                tier.pricePerSeatExcludingTax,
+                                event.currency,
+                              )}{" "}
+                              • {tier.availableSeats} left)
                             </option>
                           ))}
                         </select>
@@ -530,12 +619,21 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
 
                       {/* Quantity select counter */}
                       <div className="flex items-center justify-between pt-2">
-                        <span className="text-[10px] uppercase font-bold tracking-wider text-foreground/50">Ticket Quantity</span>
+                        <span className="text-[10px] uppercase font-bold tracking-wider text-foreground/50">
+                          Ticket Quantity
+                        </span>
                         <div className="flex items-center border border-border rounded-lg overflow-hidden bg-background">
                           <button
                             type="button"
-                            onClick={() => adjustQuantity(-1, selectedTier?.availableSeats || 0)}
-                            disabled={quantity <= 1 || isSoldOut || bookingInProgress}
+                            onClick={() =>
+                              adjustQuantity(
+                                -1,
+                                selectedTier?.availableSeats || 0,
+                              )
+                            }
+                            disabled={
+                              quantity <= 1 || isSoldOut || bookingInProgress
+                            }
                             className="px-3 py-1.5 text-sm hover:bg-foreground/5 transition-colors disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed border-none font-semibold"
                           >
                             -
@@ -545,8 +643,17 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
                           </span>
                           <button
                             type="button"
-                            onClick={() => adjustQuantity(1, selectedTier?.availableSeats || 0)}
-                            disabled={quantity >= (selectedTier?.availableSeats || 0) || isSoldOut || bookingInProgress}
+                            onClick={() =>
+                              adjustQuantity(
+                                1,
+                                selectedTier?.availableSeats || 0,
+                              )
+                            }
+                            disabled={
+                              quantity >= (selectedTier?.availableSeats || 0) ||
+                              isSoldOut ||
+                              bookingInProgress
+                            }
                             className="px-3 py-1.5 text-sm hover:bg-foreground/5 transition-colors disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed border-none font-semibold"
                           >
                             +
@@ -558,12 +665,18 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
                       <div className="pt-4 border-t border-border/40 text-xs space-y-2 text-foreground/70">
                         <div className="flex items-center justify-between">
                           <span className="font-light">Subtotal</span>
-                          <span className="font-medium text-foreground">{formatPrice(subtotal, event.currency)}</span>
+                          <span className="font-medium text-foreground">
+                            {formatPrice(subtotal, event.currency)}
+                          </span>
                         </div>
                         {taxRate > 0 && (
                           <div className="flex items-center justify-between">
-                            <span className="font-light">Tax / VAT ({taxRate}%)</span>
-                            <span className="font-medium text-foreground">{formatPrice(taxAmount, event.currency)}</span>
+                            <span className="font-light">
+                              Tax / VAT ({taxRate}%)
+                            </span>
+                            <span className="font-medium text-foreground">
+                              {formatPrice(taxAmount, event.currency)}
+                            </span>
                           </div>
                         )}
                         <div className="flex items-center justify-between pt-2 border-t border-border/40 font-bold text-sm text-foreground">
@@ -582,10 +695,46 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
                   )}
                 </CardContent>
 
+                {event.minimumAge && (
+                  <div className="pt-4 border-t border-border/40 text-xs space-y-2">
+                    <div className="bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-500 p-2.5 rounded-md flex items-start gap-2">
+                      <div className="space-y-0.5">
+                        <span className="font-semibold block">
+                          Age Restriction: {event.minimumAge}+ Years
+                        </span>
+                        <span className="text-[10px] opacity-80 leading-snug block">
+                          This event requires attendees to meet the minimum
+                          eligibility age to enter.
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center ml-2.5 gap-2 pt-1.5">
+                      <input
+                        type="checkbox"
+                        id="confirmAge"
+                        checked={ageConfirmed}
+                        onChange={(e) => setAgeConfirmed(e.target.checked)}
+                        className="h-4 w-4 rounded border-border text-primary focus:ring-primary/25 cursor-pointer"
+                      />
+                      <label
+                        htmlFor="confirmAge"
+                        className="text-[10px] text-foreground/75 cursor-pointer font-medium select-none"
+                      >
+                        I confirm that I am at least {event.minimumAge} years
+                        old.
+                      </label>
+                    </div>
+                  </div>
+                )}
+
                 <CardFooter className="p-6 pt-0">
                   <Button
                     onClick={handleBooking}
-                    disabled={event.ticketTiers.length === 0 || isSoldOut || bookingInProgress}
+                    disabled={
+                      event.ticketTiers.length === 0 ||
+                      isSoldOut ||
+                      bookingInProgress
+                    }
                     className="w-full h-11 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-lg text-sm shadow-md transition-colors cursor-pointer disabled:cursor-not-allowed"
                   >
                     {bookingInProgress ? (

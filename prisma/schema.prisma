@@ -58,6 +58,8 @@ model Event {
 
   currency String @default("INR") @db.VarChar(10)
 
+  minimumAge Int? @map("minimum_age")
+
   organizer   User         @relation(fields: [organizerId], references: [id], onDelete: Cascade)
   ticketTiers TicketTier[]
   bookings    Booking[]
@@ -135,16 +137,16 @@ model Setting {
 }
 
 model OrganizerAddress {
-  id          Int    @id @default(autoincrement()) @map("address_id")
-  userId      Int    @unique @map("user_id")
-  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type        String @db.VarChar(50)
-  street1     String @db.VarChar(255)
+  id          Int     @id @default(autoincrement()) @map("address_id")
+  userId      Int     @unique @map("user_id")
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        String  @db.VarChar(50)
+  street1     String  @db.VarChar(255)
   street2     String? @db.VarChar(255)
-  state       String @db.VarChar(100)
-  zipCode     String @map("zip_code") @db.VarChar(20)
-  country     String @db.VarChar(100)
-  phoneNumber String @map("phone_number") @db.VarChar(50)
+  state       String  @db.VarChar(100)
+  zipCode     String  @map("zip_code") @db.VarChar(20)
+  country     String  @db.VarChar(100)
+  phoneNumber String  @map("phone_number") @db.VarChar(50)
 
   @@map("organizer_address")
 }

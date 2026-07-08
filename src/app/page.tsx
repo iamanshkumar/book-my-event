@@ -62,6 +62,7 @@ interface Event {
   organizer: {
     name: string;
   };
+  minimumAge : number | null;
 }
 
 const categoriesList = [
@@ -536,7 +537,10 @@ export default function Home() {
                 : 0;
 
               return (
-                <Card key={event.id} className="border border-border bg-card shadow-none rounded-lg flex flex-col justify-between overflow-hidden group">
+                <Card
+                  key={event.id}
+                  className="border border-border bg-card shadow-none rounded-lg flex flex-col justify-between overflow-hidden group"
+                >
                   {/* Thumbnail Image Header block */}
                   <div className="h-40 w-full flex flex-col items-start justify-between p-4 border-b border-border/40 relative overflow-hidden">
                     {event.thumbnail ? (
@@ -561,11 +565,22 @@ export default function Home() {
                           {event.category.replace("_", " ")}
                         </span>
                       )}
+
+                      {/* Add the Age restriction badge block */}
+                      {event.minimumAge && (
+                        <span className="text-[9px] uppercase font-extrabold tracking-widest text-amber-500 px-2 py-0.5 bg-background/95 border border-amber-500/30 rounded-sm backdrop-blur-md shadow-xs">
+                          {event.minimumAge}+
+                        </span>
+                      )}
                     </div>
 
                     <div className="space-y-0.5 mt-auto z-20">
-                      <span className="text-[9px] uppercase tracking-wider text-foreground/45 font-semibold">Host / Organizer</span>
-                      <p className="text-xs font-semibold text-foreground/80">{event.organizer?.name || "Verified Event Host"}</p>
+                      <span className="text-[9px] uppercase tracking-wider text-foreground/45 font-semibold">
+                        Host / Organizer
+                      </span>
+                      <p className="text-xs font-semibold text-foreground/80">
+                        {event.organizer?.name || "Verified Event Host"}
+                      </p>
                     </div>
                   </div>
 
@@ -574,14 +589,20 @@ export default function Home() {
                       {event.eventName}
                     </CardTitle>
                     <CardDescription className="text-xs font-light text-foreground/70 line-clamp-2 min-h-[2rem]">
-                      {event.description || "No descriptions provided for this initiative."}
+                      {event.description ||
+                        "No descriptions provided for this initiative."}
                     </CardDescription>
                   </CardHeader>
 
                   <CardContent className="space-y-2 px-5 pb-5 text-xs text-foreground/60 font-normal">
                     <div className="flex items-center gap-2">
                       <Calendar className="h-3.5 w-3.5 text-foreground/40" />
-                      <span>{new Date(event.dateTime).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</span>
+                      <span>
+                        {new Date(event.dateTime).toLocaleString(undefined, {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                        })}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Clock className="h-3.5 w-3.5 text-foreground/40" />
@@ -591,16 +612,21 @@ export default function Home() {
                       <MapPin className="h-3.5 w-3.5 text-foreground/40" />
                       <span className="line-clamp-1">
                         {event.location}
-                        {event.country && `, ${countries.getName(event.country, "en") || event.country}`}
+                        {event.country &&
+                          `, ${countries.getName(event.country, "en") || event.country}`}
                       </span>
                     </div>
                   </CardContent>
 
                   <CardFooter className="flex items-center justify-between border-t border-border/40 p-5 mt-auto bg-foreground/[0.01]">
                     <div className="flex flex-col">
-                      <span className="text-[9px] text-foreground/45 uppercase tracking-wider font-semibold">Price Starts From</span>
+                      <span className="text-[9px] text-foreground/45 uppercase tracking-wider font-semibold">
+                        Price Starts From
+                      </span>
                       <span className="text-sm font-bold tracking-tight">
-                        {event.ticketTiers.length === 0 ? "Free" : formatPrice(lowestPrice, event.currency)}
+                        {event.ticketTiers.length === 0
+                          ? "Free"
+                          : formatPrice(lowestPrice, event.currency)}
                       </span>
                     </div>
 

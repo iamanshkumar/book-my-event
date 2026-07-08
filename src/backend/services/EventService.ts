@@ -27,6 +27,7 @@ interface CreateEventInput{
     category? : EventCategory;
     currency? : string;
     ticketTiers : TicketTierInput[];
+    minimumAge : number | null;
 }
 export class EventService {
     static async createEventWithTiers(input : CreateEventInput){
@@ -64,6 +65,7 @@ export class EventService {
                     category : input.category ?? undefined,
                     status : "PUBLISHED",
                     currency : input.currency ?? "INR",
+                    minimumAge : input.minimumAge !==undefined ? input.minimumAge : null,
                 }
             });
 
