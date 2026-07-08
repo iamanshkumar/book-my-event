@@ -1,10 +1,11 @@
-import { getCaptchaSettings, getGeneralSettings } from "@/backend/lib/settings";
+import { getCaptchaSettings, getGeneralSettings, getTermsSettings } from "@/backend/lib/settings";
 import { NextResponse } from "next/server";
 
 export async function GET(){
     try{
         const general = await getGeneralSettings();
         const captcha = await getCaptchaSettings();
+        const terms = await getTermsSettings();
 
         return NextResponse.json({
             websiteTitle : general.websiteTitle,
@@ -14,7 +15,9 @@ export async function GET(){
             heroHeading : general.heroHeading,
             captchaEnabledRegister : captcha.captchaEnabledRegister,
             captchaEnabledForgotPassword : captcha.captchaEnabledForgotPassword,
-            captchaSiteKey : captcha.captchaSiteKey
+            captchaSiteKey : captcha.captchaSiteKey,
+            signupTermsEnabled : terms.signupTermsEnabled,
+            signupTermsContent : terms.signupTermsContent
         });
     }catch(err : any){
         return NextResponse.json({

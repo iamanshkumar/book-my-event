@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -18,15 +18,39 @@ export default function OrganizerRegisterPage() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  const [termsEnabled, setTermsEnabled] = useState(false);
+  const [acceptTerms, setAcceptTerms] = useState(false);
+
+  useEffect(() => {
+    async function loadConfig() {
+      try {
+        const res = await fetch("/api/settings");
+        const data = await res.json();
+        setTermsEnabled(data.signupTermsEnabled || false);
+      } catch (e) {
+        // ignore
+      }
+    }
+    loadConfig();
+  }, []);
+
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (termsEnabled && !acceptTerms) {
+      toast.error("Terms & Conditions Required", {
+        description: "You must accept the terms and conditions to register.",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, role: "ORGANIZER" })
+        body: JSON.stringify({ name, email, password, role: "ORGANIZER", acceptTerms })
       });
 
       const data = await response.json();
@@ -138,6 +162,34 @@ export default function OrganizerRegisterPage() {
                 </button>
               </div>
             </div>
+
+            {/* Terms and Conditions Acceptance */}
+            {termsEnabled && (
+              <div className="flex items-start gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  id="acceptTerms"
+                  checked={acceptTerms}
+                  onChange={(e) => setAcceptTerms(e.target.checked)}
+                  className="h-4 w-4 mt-0.5 accent-primary rounded border-border cursor-pointer shrink-0"
+                  required
+                />
+                <Label
+                  htmlFor="acceptTerms"
+                  className="text-[11px] font-normal leading-tight text-foreground/70 cursor-pointer select-none"
+                >
+                  I accept the{" "}
+                  <a
+                    href="/terms"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary font-semibold hover:underline"
+                  >
+                    Terms & Conditions
+                  </a>
+                </Label>
+              </div>
+            )}
           </CardContent>
 
           <CardFooter className="flex flex-col space-y-4 pt-4 pb-6">

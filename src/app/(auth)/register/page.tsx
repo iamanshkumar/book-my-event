@@ -23,19 +23,23 @@ export default function RegisterPage() {
   const [siteKey, setSiteKey] = useState("");
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
+  const [termsEnabled, setTermsEnabled] = useState(false);
+  const [acceptTerms, setAcceptTerms] = useState(false);
+
 
   useEffect(() => {
-    async function loadCaptchaConfig() {
+    async function loadConfig() {
       try {
         const res = await fetch("/api/settings");
         const data = await res.json();
         setCaptchaEnabled(data.captchaEnabledRegister);
         setSiteKey(data.captchaSiteKey || "MOCK");
+        setTermsEnabled(data.signupTermsEnabled || false);
       } catch (e) {
         // ignore
       }
     }
-    loadCaptchaConfig();
+    loadConfig();
   }, []);
   
 
@@ -50,13 +54,20 @@ export default function RegisterPage() {
       return;
     }
 
+    if (termsEnabled && !acceptTerms) {
+      toast.error("Terms & Conditions Required", {
+        description: "You must accept the terms and conditions to register.",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, role: "CUSTOMER", recaptchaToken: captchaToken })
+        body: JSON.stringify({ name, email, password, role: "CUSTOMER", recaptchaToken: captchaToken, acceptTerms })
       });
 
       const data = await response.json();
@@ -177,6 +188,34 @@ export default function RegisterPage() {
                 </button>
               </div>
             </div>
+
+            {/* Terms and Conditions Acceptance */}
+            {termsEnabled && (
+              <div className="flex items-start gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  id="acceptTerms"
+                  checked={acceptTerms}
+                  onChange={(e) => setAcceptTerms(e.target.checked)}
+                  className="h-4 w-4 mt-0.5 accent-primary rounded border-border cursor-pointer shrink-0"
+                  required
+                />
+                <Label
+                  htmlFor="acceptTerms"
+                  className="text-[11px] font-normal leading-tight text-foreground/70 cursor-pointer select-none"
+                >
+                  I accept the{" "}
+                  <a
+                    href="/terms"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary font-semibold hover:underline"
+                  >
+                    Terms & Conditions
+                  </a>
+                </Label>
+              </div>
+            )}
           </CardContent>
 
           {captchaEnabled && (

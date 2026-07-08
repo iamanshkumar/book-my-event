@@ -133,3 +133,27 @@ export async function updateCaptchaSettings(userId = 0, data: any) {
     await upsertSetting(userId, "captchaSecretKey", data.captchaSecretKey || "");
     return getCaptchaSettings(userId);
 }
+
+export async function getTermsSettings(userId = 0) {
+    const map = await getSettingsMap(userId);
+
+    const signupTermsEnabled = map["signupTermsEnabled"] === "true";
+    const signupTermsContent = map["signupTermsContent"] !== undefined ? map["signupTermsContent"] : "";
+
+    // Write defaults to DB if not set
+    if (map["signupTermsEnabled"] === undefined) await upsertSetting(userId, "signupTermsEnabled", signupTermsEnabled ? "true" : "false");
+    if (map["signupTermsContent"] === undefined) await upsertSetting(userId, "signupTermsContent", signupTermsContent);
+
+    return {
+        id: 0,
+        userId,
+        signupTermsEnabled,
+        signupTermsContent
+    };
+}
+
+export async function updateTermsSettings(userId = 0, data: any) {
+    await upsertSetting(userId, "signupTermsEnabled", data.signupTermsEnabled ? "true" : "false");
+    await upsertSetting(userId, "signupTermsContent", data.signupTermsContent || "");
+    return getTermsSettings(userId);
+}

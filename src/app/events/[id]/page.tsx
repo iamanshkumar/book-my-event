@@ -3,18 +3,25 @@
 import React, { use, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { 
-  Calendar, 
-  MapPin, 
-  Clock, 
-  Loader2, 
-  Ticket, 
-  ArrowLeft, 
-  Sparkles, 
-  User, 
-  Receipt 
+import {
+  Calendar,
+  MapPin,
+  Clock,
+  Loader2,
+  Ticket,
+  ArrowLeft,
+  Sparkles,
+  User,
+  Receipt,
 } from "lucide-react";
 import { toast } from "sonner";
 import countries from "i18n-iso-countries";
@@ -51,11 +58,15 @@ interface Event {
     name: string;
     email: string;
   };
-  minimumAge : number | null;
-  terms? : string | null;
+  minimumAge: number | null;
+  terms?: string | null;
 }
 
-export default function EventDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+export default function EventDetailsPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = use(params);
   const router = useRouter();
 
@@ -79,7 +90,7 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
   const handleLogout = async () => {
     try {
       const response = await fetch("/api/auth/logout", {
-        method: "POST"
+        method: "POST",
       });
       const data = await response.json();
       toast.success(data.message || "Logged out successfully!");
@@ -107,15 +118,23 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
         videoId = cleanUrl.split("embed/")[1]?.split("?")[0] || "";
       }
       if (videoId && videoId.length === 11) {
-        return { type: "embed", url: `https://www.youtube.com/embed/${videoId}` };
+        return {
+          type: "embed",
+          url: `https://www.youtube.com/embed/${videoId}`,
+        };
       }
     }
 
     // 2. Instagram Match (post, reel, tv)
     if (cleanUrl.includes("instagram.com")) {
-      const igMatch = cleanUrl.match(/(?:instagram\.com)\/(?:p|reel|tv)\/([a-zA-Z0-9_-]+)/);
+      const igMatch = cleanUrl.match(
+        /(?:instagram\.com)\/(?:p|reel|tv)\/([a-zA-Z0-9_-]+)/,
+      );
       if (igMatch && igMatch[1]) {
-        return { type: "embed", url: `https://www.instagram.com/reel/${igMatch[1]}/embed/` };
+        return {
+          type: "embed",
+          url: `https://www.instagram.com/reel/${igMatch[1]}/embed/`,
+        };
       }
     }
 
@@ -123,7 +142,10 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
     if (cleanUrl.includes("vimeo.com")) {
       const vimeoMatch = cleanUrl.match(/(?:vimeo\.com)\/([0-9]+)/);
       if (vimeoMatch && vimeoMatch[1]) {
-        return { type: "embed", url: `https://player.vimeo.com/video/${vimeoMatch[1]}` };
+        return {
+          type: "embed",
+          url: `https://player.vimeo.com/video/${vimeoMatch[1]}`,
+        };
       }
     }
 
@@ -193,16 +215,19 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
     // 1. Force Sign In if guest
     if (!user) {
       toast.info("Authentication required", {
-        description: "Please sign in to your customer account to reserve tickets."
+        description:
+          "Please sign in to your customer account to reserve tickets.",
       });
-      router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+      router.push(
+        `/login?redirect=${encodeURIComponent(window.location.pathname)}`,
+      );
       return;
     }
 
     // 2. Prevent non-customer roles from buying
     if (user.role !== "CUSTOMER") {
       toast.error("Booking forbidden", {
-        description: `Only users with the CUSTOMER role can buy passes. Your current role is ${user.role}.`
+        description: `Only users with the CUSTOMER role can buy passes. Your current role is ${user.role}.`,
       });
       return;
     }
@@ -212,7 +237,7 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
       return;
     }
 
-    if(event?.minimumAge && !ageConfirmed){
+    if (event?.minimumAge && !ageConfirmed) {
       toast.error("Age confirmation required", {
         description: `Please confirm that you meet the minimum age requirement of ${event.minimumAge} years.`,
       });
@@ -228,8 +253,8 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ticketTierId: selectedTierId,
-          quantity: quantity
-        })
+          quantity: quantity,
+        }),
       });
 
       const data = await res.json();
@@ -240,18 +265,17 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
 
       toast.dismiss(toastId);
       toast.success("Pass reserved successfully!", {
-        description: "Redirecting to your tickets list..."
+        description: "Redirecting to your tickets list...",
       });
 
       // Redirect to Attendee Tickets Dashboard catalog page
       setTimeout(() => {
         router.push("/dashboard/tickets");
       }, 1500);
-
     } catch (err: any) {
       toast.dismiss(toastId);
       toast.error("Checkout failed", {
-        description: err.message
+        description: err.message,
       });
     } finally {
       setBookingInProgress(false);
@@ -270,7 +294,9 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
         <div className="flex-1 max-w-7xl mx-auto w-full px-6 py-12 flex items-center justify-center">
           <div className="flex flex-col items-center gap-3">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="text-xs text-foreground/50 font-light">Loading event profiles...</p>
+            <p className="text-xs text-foreground/50 font-light">
+              Loading event profiles...
+            </p>
           </div>
         </div>
       </div>
@@ -283,9 +309,14 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
       <div className="min-h-screen flex flex-col bg-background text-foreground">
         <header className="sticky top-0 z-50 backdrop-blur-md bg-background/80 border-b border-border/40">
           <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-            <div className="flex items-center gap-2 cursor-pointer" onClick={() => router.push("/")}>
+            <div
+              className="flex items-center gap-2 cursor-pointer"
+              onClick={() => router.push("/")}
+            >
               <Calendar className="h-5 w-5 text-primary" />
-              <span className="font-semibold tracking-tight text-lg">BookMyEvent</span>
+              <span className="font-semibold tracking-tight text-lg">
+                BookMyEvent
+              </span>
             </div>
             <ThemeToggle />
           </div>
@@ -296,12 +327,15 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
             <Ticket className="h-6 w-6" />
           </div>
           <div className="space-y-2">
-            <h2 className="text-2xl font-bold tracking-tight">Event Profile Missing</h2>
+            <h2 className="text-2xl font-bold tracking-tight">
+              Event Profile Missing
+            </h2>
             <p className="text-sm text-foreground/60 font-light max-w-md mx-auto">
-              We couldn't retrieve the event you were looking for. It might have been deleted, cancelled, or doesn't exist.
+              We couldn't retrieve the event you were looking for. It might have
+              been deleted, cancelled, or doesn't exist.
             </p>
           </div>
-          <Button 
+          <Button
             onClick={() => router.push("/")}
             className="bg-foreground text-background hover:bg-foreground/90 h-10 px-5 text-xs font-semibold rounded-md shadow-sm transition-all gap-2"
           >
@@ -317,7 +351,9 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
   const isSoldOut = selectedTier ? selectedTier.availableSeats <= 0 : true;
 
   // Calculators
-  const priceUnit = selectedTier ? parseFloat(selectedTier.pricePerSeatExcludingTax) : 0;
+  const priceUnit = selectedTier
+    ? parseFloat(selectedTier.pricePerSeatExcludingTax)
+    : 0;
   const taxRate = selectedTier ? parseFloat(selectedTier.taxPercentage) : 0;
   const subtotal = priceUnit * quantity;
   const taxAmount = subtotal * (taxRate / 100);
@@ -369,8 +405,7 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
                 (user ? (
                   <Button
                     onClick={handleLogout}
-                    variant="destructive"
-                    className="bg-destructive hover:bg-destructive/90 text-destructive-foreground h-9 px-4 text-xs font-semibold rounded-md shadow-sm transition-all cursor-pointer"
+                    className="px-4 text-xs font-semibold rounded-md shadow-sm transition-all cursor-pointer"
                   >
                     Logout
                   </Button>

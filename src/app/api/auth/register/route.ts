@@ -1,6 +1,6 @@
 import { AuthService } from "@/backend/services/AuthService";
 import { NextResponse } from "next/server";
-import { getCaptchaSettings } from "@/backend/lib/settings";
+import { getCaptchaSettings, getTermsSettings } from "@/backend/lib/settings";
 import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -8,7 +8,12 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 export async function POST(request : Request){
     try{
         const body = await request.json();
-        const { name, email, password, role, recaptchaToken } = body;
+        const { name, email, password, role, recaptchaToken, acceptTerms } = body;
+
+        const terms = await getTermsSettings();
+        if (terms.signupTermsEnabled && !acceptTerms) {
+            return NextResponse.json({ error: "You must accept the terms and conditions to register." }, { status: 400 });
+        }
 
         const captcha = await getCaptchaSettings();
 
