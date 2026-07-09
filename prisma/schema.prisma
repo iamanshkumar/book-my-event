@@ -29,6 +29,7 @@ model User {
   events   Event[]
   bookings Booking[]
   address  OrganizerAddress?
+  couponCodes CouponCode[]
 
   @@map("users")
 }
@@ -150,4 +151,24 @@ model OrganizerAddress {
   phoneNumber String  @map("phone_number") @db.VarChar(50)
 
   @@map("organizer_address")
+}
+
+model CouponCode {
+  id          Int      @id @default(autoincrement()) @map("coupon_id")
+  userId      Int      @map("user_id")
+  name        String   @db.VarChar(255)
+  code        String   @db.VarChar(255)
+  description String?  @db.VarChar(1000)
+  type        String   @db.VarChar(50)
+  amount      Float
+  status      Int      @default(1)
+  startDate   DateTime @map("start_date")
+  endDate     DateTime @map("end_date")
+  eventId     String   @map("event_id") @db.Text
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, code])
+  @@index([code])
+  @@map("coupon_codes")
 }

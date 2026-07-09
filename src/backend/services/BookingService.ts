@@ -5,6 +5,7 @@ interface CreateBookingInput {
     userId: number;
     ticketTierId: number;
     quantity: number;
+    couponCode?: string;
 }
 
 export class BookingService {
@@ -34,8 +35,43 @@ export class BookingService {
             });
 
             const basePrice = Number(selectedTier.price_per_seat_excluding_tax) * input.quantity;
-            const taxAmount = basePrice * (Number(selectedTier.tax_percentage) / 100);
-            const finalPrice = basePrice + taxAmount;
+            
+            let discountAmount = 0;
+            if (input.couponCode) {
+                const cleanCode = input.couponCode.trim().toUpperCase();
+                const coupon = await tx.couponCode.findFirst({
+                    where: { code: cleanCode }
+                });
+
+                if (!coupon) {
+                    throw new Error("Invalid coupon code: Coupon does not exist.");
+                }
+                if (coupon.status !== 1) {
+                    throw new Error("Invalid coupon code: Coupon is disabled.");
+                }
+
+                const now = new Date();
+                if (now < new Date(coupon.startDate) || now > new Date(coupon.endDate)) {
+                    throw new Error("Invalid coupon code: Coupon has expired or is not yet active.");
+                }
+
+                const allowedEventIds = coupon.eventId.split(",").map(id => id.trim());
+                if (!allowedEventIds.includes(String(selectedTier.event_id))) {
+                    throw new Error("Invalid coupon code: Coupon is not valid for this event.");
+                }
+
+                if (coupon.type === "PERCENTAGE") {
+                    discountAmount = basePrice * (coupon.amount / 100);
+                } else if (coupon.type === "FIXED") {
+                    discountAmount = coupon.amount;
+                }
+
+                discountAmount = Math.min(discountAmount, basePrice);
+            }
+
+            const discountedBase = Math.max(0, basePrice - discountAmount);
+            const taxAmount = discountedBase * (Number(selectedTier.tax_percentage) / 100);
+            const finalPrice = discountedBase + taxAmount;
 
             await tx.ticketTier.update({
                 where: { id: input.ticketTierId },

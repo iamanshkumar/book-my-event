@@ -16,6 +16,7 @@ The application features a granular role-based access control system supporting 
 - Premium active teaser media player on checkout screens supporting multiple switching video trailers (YouTube, Instagram Reels, Vimeo, and raw HTML5 video files) with selector tabs.
 - Search-engine-optimized dynamic metadata layout for Event Details page and static layouts for login, register, and dashboard portals.
 - **Terms & Conditions Section:** Displays a custom terms & conditions layout block on the public event details screen when configured by the organizer.
+- **Real-Time Coupon Application:** Supports applying coupon codes directly at checkout, applying fixed/percentage discount deductions instantly to subtotal, recalculating tax on the discounted base, and removing coupons to restore default pricing.
 
 ### 2. Onboarding & Workspace Access
 - **Separated Registration:** Distinct registration flows for Attendees (`/register`) and Organizers (`/register/organizer`) to secure default privileges.
@@ -38,6 +39,7 @@ The application features a granular role-based access control system supporting 
 - **Minimum Age Checks:** Enforces age verification checks during manual creation, updating, and bulk CSV uploads.
 - **Event Terms & Conditions:** Supports adding customized event-level terms and conditions manually or via bulk CSV upload templates.
 - **UI Consistency:** The "Age Restrictions" and "Terms & Conditions" panels are aligned inside the event specifications card on both event creation and event update panels.
+- **Coupon Code Management:** Allows organizers to list, create, update, and delete custom coupons. Features validation checks for unique codes per organizer, status toggles, fixed/percentage discount modes, validity durations, and allowed events.
 - Drag-and-drop/select-file local upload widget for event banners and thumbnails, storing media securely on server storage.
 - Scheduling Wizard allowing organizers to configure ticket tiers with custom seat capacities, price configurations, and tax rates.
 - Editor panel providing specification updates, multiple trailer video link stacks, and category selection.
@@ -157,14 +159,19 @@ Open [http://localhost:3000](http://localhost:3000) in your web browser to acces
 ### 4. Booking & Payments
 - `GET /api/bookings` - Retrieve active purchase ledger history for logged-in CUSTOMER profiles.
 - `GET /api/bookings/[id]` - Retrieve passes invoice metadata matching booking reference IDs.
-- `POST /api/bookings` - Reserve seats and checkout tickets.
+- `POST /api/bookings` - Reserve seats and checkout tickets (supports optional `couponCode` parameters).
 - `POST /api/bookings/[id]/cancel` - Cancel ticket reservation, releasing seating capacity.
 - `POST /api/payments/webhooks` - Payment gateway callback handler updating transaction status.
+- `POST /api/coupons/validate` - Validate coupon code parameters and compute discount values.
 
 ### 5. Organizer Portal
 - `GET /api/organizer/dashboard` - Retrieve host indicators (revenue metrics, seatings sold global totals, hosted event counts, fill rates).
 - `GET /api/organizer/events` - Retrieve catalog listings owned by host organizer.
 - `GET /api/organizer/bookings` - Audit registration log sheet matching reservations made across organizer's events.
+- `GET /api/organizer/coupons` - List coupons created by the organizer.
+- `POST /api/organizer/coupons` - Create a new coupon.
+- `PUT /api/organizer/coupons/[id]` - Update an existing coupon details.
+- `DELETE /api/organizer/coupons/[id]` - Delete a coupon.
 
 ### 6. Administration Control
 - `GET /api/admin/dashboard` - Query global system-wide revenue turnover, ticket counts, registry accounts, and active listings.

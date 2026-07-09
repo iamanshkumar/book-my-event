@@ -158,18 +158,33 @@ export default function OrganizerLayoutClient({ children }: { children: React.Re
 
               <div>
                 <p className="px-2 text-[9px] uppercase font-bold tracking-widest text-foreground/35 mb-2">Audit & Reservations</p>
-                <Button 
-                  variant={pathname === "/organizer/bookings" ? "secondary" : "ghost"} 
-                  className={`w-full justify-start gap-3 h-9.5 text-xs rounded-lg cursor-pointer border border-transparent transition-all ${
-                    pathname === "/organizer/bookings" 
-                      ? "bg-primary/10 text-primary border-primary/15 font-semibold" 
-                      : "text-foreground/60 hover:bg-foreground/[0.02] hover:text-foreground font-light"
-                  }`} 
-                  onClick={() => router.push("/organizer/bookings")}
-                >
-                  <Ticket className={`h-4 w-4 ${pathname === "/organizer/bookings" ? "text-primary" : "text-foreground/40"}`} />
-                  Bookings
-                </Button>
+                <div className="space-y-1">
+                  <Button 
+                    variant={pathname === "/organizer/bookings" ? "secondary" : "ghost"} 
+                    className={`w-full justify-start gap-3 h-9.5 text-xs rounded-lg cursor-pointer border border-transparent transition-all ${
+                      pathname === "/organizer/bookings" 
+                        ? "bg-primary/10 text-primary border-primary/15 font-semibold" 
+                        : "text-foreground/60 hover:bg-foreground/[0.02] hover:text-foreground font-light"
+                    }`} 
+                    onClick={() => router.push("/organizer/bookings")}
+                  >
+                    <Ticket className={`h-4 w-4 ${pathname === "/organizer/bookings" ? "text-primary" : "text-foreground/40"}`} />
+                    Bookings
+                  </Button>
+
+                  <Button 
+                    variant={pathname === "/organizer/coupons" ? "secondary" : "ghost"} 
+                    className={`w-full justify-start gap-3 h-9.5 text-xs rounded-lg cursor-pointer border border-transparent transition-all ${
+                      pathname === "/organizer/coupons" 
+                        ? "bg-primary/10 text-primary border-primary/15 font-semibold" 
+                        : "text-foreground/60 hover:bg-foreground/[0.02] hover:text-foreground font-light"
+                    }`} 
+                    onClick={() => router.push("/organizer/coupons")}
+                  >
+                    <Sparkles className={`h-4 w-4 ${pathname === "/organizer/coupons" ? "text-primary" : "text-foreground/40"}`} />
+                    Coupons
+                  </Button>
+                </div>
               </div>
 
               <div>
@@ -325,6 +340,15 @@ export default function OrganizerLayoutClient({ children }: { children: React.Re
         >
           <Ticket className="h-5 w-5" />
           <span>Bookings</span>
+        </button>
+        <button
+          onClick={() => router.push("/organizer/coupons")}
+          className={`flex flex-col items-center gap-1 text-[10px] font-medium transition-all cursor-pointer ${
+            pathname === "/organizer/coupons" ? "text-primary" : "text-foreground/50"
+          }`}
+        >
+          <Sparkles className="h-5 w-5" />
+          <span>Coupons</span>
         </button>
         <button
           onClick={() => router.push("/organizer/profile/currency")}

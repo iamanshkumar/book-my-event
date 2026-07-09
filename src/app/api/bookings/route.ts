@@ -18,7 +18,7 @@ export async function POST(request : Request){
 
         const userId = parseInt(userIdStr , 10);
         const body = await request.json();
-        const {ticketTierId , quantity} = body;
+        const {ticketTierId , quantity, couponCode} = body;
 
         if (!ticketTierId || !quantity || quantity <= 0) {
             return NextResponse.json(
@@ -30,7 +30,8 @@ export async function POST(request : Request){
         const newBooking = await BookingService.reserveTicket({
             userId,
             ticketTierId : parseInt(ticketTierId , 10),
-            quantity : parseInt(quantity , 10)
+            quantity : parseInt(quantity , 10),
+            couponCode: couponCode || undefined
         });
 
         return NextResponse.json({
