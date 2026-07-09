@@ -12,6 +12,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Calendar,
   MapPin,
@@ -87,6 +88,87 @@ export default function EventDetailsPage({
 
   const [ageConfirmed, setAgeConfirmed] = useState(false);
 
+  const [couponInput, setCouponInput] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  const [validatingCoupon, setValidatingCoupon] = useState(false);
+
+  const [websiteTitle, setWebsiteTitle] = useState("BookMyEvent");
+  const [websiteLogo, setWebsiteLogo] = useState<string | null>(null);
+
+  const handleApplyCoupon = async () => {
+    if (!couponInput.trim()) return;
+    setValidatingCoupon(true);
+    
+    // Calculate subtotal inline to pass to validation endpoint
+    const selTier = event?.ticketTiers.find((t) => t.id === selectedTierId);
+    const prUnit = selTier ? parseFloat(selTier.pricePerSeatExcludingTax) : 0;
+    const currentSubtotal = prUnit * quantity;
+
+    try {
+      const res = await fetch("/api/coupons/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: couponInput.trim().toUpperCase(),
+          eventId: id,
+          subtotal: currentSubtotal,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.valid) {
+        setAppliedCoupon(data.coupon);
+        toast.success("Coupon code successfully applied!", {
+          description: `Enjoy your discount benefits.`,
+        });
+      } else {
+        toast.error("Invalid coupon code", {
+          description: data.error || "The coupon code entered is invalid or expired.",
+        });
+      }
+    } catch (e: any) {
+      toast.error("Invalid coupon code");
+    } finally {
+      setValidatingCoupon(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponInput("");
+    toast.info("Coupon removed.");
+  };
+
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        const res = await fetch("/api/settings");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.websiteTitle) setWebsiteTitle(data.websiteTitle);
+          setWebsiteLogo(data.websiteLogo || null);
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+    loadSettings();
+  }, []);
+
+  const getNormalizedTrailerUrls = (urls: any): string[] => {
+    if (!urls) return [];
+    if (Array.isArray(urls)) return urls;
+    if (typeof urls === "string") {
+      try {
+        const parsed = JSON.parse(urls);
+        if (Array.isArray(parsed)) return parsed;
+        return [urls];
+      } catch (e) {
+        return [urls];
+      }
+    }
+    return [];
+  };
+
   const handleLogout = async () => {
     try {
       const response = await fetch("/api/auth/logout", {
@@ -103,9 +185,9 @@ export default function EventDetailsPage({
     }
   };
 
-  const getVideoSource = (url?: string) => {
-    if (!url) return null;
-    const cleanUrl = url.trim();
+  const getVideoSource = (url?: any) => {
+    if (!url || typeof url !== "string") return null;
+    let cleanUrl = url.trim().replace(/^["']|["']$/g, "");
 
     // 1. YouTube Match
     if (cleanUrl.includes("youtube.com") || cleanUrl.includes("youtu.be")) {
@@ -117,7 +199,8 @@ export default function EventDetailsPage({
       } else if (cleanUrl.includes("embed/")) {
         videoId = cleanUrl.split("embed/")[1]?.split("?")[0] || "";
       }
-      if (videoId && videoId.length === 11) {
+      videoId = videoId.replace(/[^a-zA-Z0-9_-]/g, "");
+      if (videoId) {
         return {
           type: "embed",
           url: `https://www.youtube.com/embed/${videoId}`,
@@ -254,6 +337,7 @@ export default function EventDetailsPage({
         body: JSON.stringify({
           ticketTierId: selectedTierId,
           quantity: quantity,
+          couponCode: appliedCoupon ? appliedCoupon.code : undefined,
         }),
       });
 
@@ -313,9 +397,13 @@ export default function EventDetailsPage({
               className="flex items-center gap-2 cursor-pointer"
               onClick={() => router.push("/")}
             >
-              <Calendar className="h-5 w-5 text-primary" />
+              {websiteLogo ? (
+                <img src={websiteLogo} alt={websiteTitle} className="h-8 w-8 object-contain rounded-md" />
+              ) : (
+                <Calendar className="h-5 w-5 text-primary" />
+              )}
               <span className="font-semibold tracking-tight text-lg">
-                BookMyEvent
+                {websiteTitle}
               </span>
             </div>
             <ThemeToggle />
@@ -356,8 +444,19 @@ export default function EventDetailsPage({
     : 0;
   const taxRate = selectedTier ? parseFloat(selectedTier.taxPercentage) : 0;
   const subtotal = priceUnit * quantity;
-  const taxAmount = subtotal * (taxRate / 100);
-  const grandTotal = subtotal + taxAmount;
+
+  let discount = 0;
+  if (appliedCoupon) {
+    if (appliedCoupon.type === "PERCENTAGE") {
+      discount = subtotal * (parseFloat(appliedCoupon.amount) / 100);
+    } else {
+      discount = parseFloat(appliedCoupon.amount);
+    }
+  }
+
+  const discountedSubtotal = Math.max(0, subtotal - discount);
+  const taxAmount = discountedSubtotal * (taxRate / 100);
+  const grandTotal = discountedSubtotal + taxAmount;
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-200">
@@ -368,9 +467,13 @@ export default function EventDetailsPage({
             className="flex items-center gap-2 cursor-pointer"
             onClick={() => router.push("/")}
           >
-            <Calendar className="h-5 w-5 text-primary" />
+            {websiteLogo ? (
+              <img src={websiteLogo} alt={websiteTitle} className="h-8 w-8 object-contain rounded-md" />
+            ) : (
+              <Calendar className="h-5 w-5 text-primary" />
+            )}
             <span className="font-semibold tracking-tight text-lg">
-              BookMyEvent
+              {websiteTitle}
             </span>
           </div>
 
@@ -530,58 +633,58 @@ export default function EventDetailsPage({
             )}
 
             {/* Teaser & Trailer Section */}
-            {event.trailerUrls &&
-              event.trailerUrls.length > 0 &&
-              (() => {
-                const activeUrl = event.trailerUrls[activeTrailerIndex];
-                const video = getVideoSource(activeUrl);
-                if (!video) return null;
-                return (
-                  <div className="space-y-3 bg-card border border-border p-6 rounded-xl shadow-xs">
-                    <h3 className="text-lg font-bold tracking-tight border-b border-border/40 pb-2.5">
-                      Event Teasers & Trailers
-                    </h3>
-                    <div className="overflow-hidden rounded-xl border border-border/40 bg-black aspect-video relative shadow-xs">
-                      {video.type === "embed" ? (
-                        <iframe
-                          src={video.url}
-                          title={`Event Teaser Trailer ${activeTrailerIndex + 1}`}
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                          className="w-full h-full border-0 absolute inset-0"
-                        />
-                      ) : (
-                        <video
-                          src={video.url}
-                          controls
-                          preload="metadata"
-                          className="w-full h-full object-contain"
-                        />
-                      )}
-                    </div>
-
-                    {/* Dynamic selection tabs below player */}
-                    {event.trailerUrls.length > 1 && (
-                      <div className="flex gap-2 overflow-x-auto pb-1 mt-2 scrollbar-none select-none">
-                        {event.trailerUrls.map((_, index) => (
-                          <button
-                            key={index}
-                            type="button"
-                            onClick={() => setActiveTrailerIndex(index)}
-                            className={`px-3 py-1.5 rounded-lg text-[10px] font-semibold uppercase tracking-wider border transition-all cursor-pointer ${
-                              activeTrailerIndex === index
-                                ? "bg-primary text-primary-foreground border-primary shadow-xs"
-                                : "bg-background hover:bg-foreground/[0.03] text-foreground/60 hover:text-foreground border-border/80"
-                            }`}
-                          >
-                            Teaser {index + 1}
-                          </button>
-                        ))}
-                      </div>
+            {(() => {
+              const trailerUrls = getNormalizedTrailerUrls(event.trailerUrls);
+              if (trailerUrls.length === 0) return null;
+              const activeUrl = trailerUrls[activeTrailerIndex];
+              const video = getVideoSource(activeUrl);
+              if (!video) return null;
+              return (
+                <div className="space-y-3 bg-card border border-border p-6 rounded-xl shadow-xs">
+                  <h3 className="text-lg font-bold tracking-tight border-b border-border/40 pb-2.5">
+                    Event Teasers & Trailers
+                  </h3>
+                  <div className="overflow-hidden rounded-xl border border-border/40 bg-black aspect-video relative shadow-xs">
+                    {video.type === "embed" ? (
+                      <iframe
+                        src={video.url}
+                        title={`Event Teaser Trailer ${activeTrailerIndex + 1}`}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        className="w-full h-full border-0 absolute inset-0"
+                      />
+                    ) : (
+                      <video
+                        src={video.url}
+                        controls
+                        preload="metadata"
+                        className="w-full h-full object-contain"
+                      />
                     )}
                   </div>
-                );
-              })()}
+
+                  {/* Dynamic selection tabs below player */}
+                  {trailerUrls.length > 1 && (
+                    <div className="flex gap-2 overflow-x-auto pb-1 mt-2 scrollbar-none select-none">
+                      {trailerUrls.map((_, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          onClick={() => setActiveTrailerIndex(index)}
+                          className={`px-3 py-1.5 rounded-lg text-[10px] font-semibold uppercase tracking-wider border transition-all cursor-pointer ${
+                            activeTrailerIndex === index
+                              ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                              : "bg-background hover:bg-foreground/[0.03] text-foreground/60 hover:text-foreground border-border/80"
+                          }`}
+                        >
+                          Teaser {index + 1}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
 
           {/* RIGHT: Booking Action Panel */}
@@ -709,6 +812,56 @@ export default function EventDetailsPage({
                         </div>
                       </div>
 
+                      {/* Coupon Code Section */}
+                      <div className="pt-4 border-t border-border/40 space-y-2">
+                        <label className="text-[10px] uppercase font-bold tracking-wider text-foreground/50">
+                          Promo / Coupon Code
+                        </label>
+                        {appliedCoupon ? (
+                          <div className="flex items-center justify-between bg-primary/10 border border-primary/20 rounded-lg p-2.5">
+                            <div className="flex items-center gap-2">
+                              <Sparkles className="h-4 w-4 text-primary animate-pulse shrink-0" />
+                              <div className="text-[11px] leading-snug">
+                                <span className="font-semibold text-foreground">{appliedCoupon.code}</span>
+                                <span className="text-foreground/60 ml-1">
+                                  ({appliedCoupon.type === "PERCENTAGE" ? `${appliedCoupon.amount}%` : formatPrice(appliedCoupon.amount, event.currency)} off)
+                                </span>
+                              </div>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              onClick={handleRemoveCoupon}
+                              className="text-[10px] text-destructive hover:bg-destructive/10 h-6 px-1.5 font-semibold transition-all cursor-pointer border-none"
+                            >
+                              Remove
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex gap-2">
+                            <Input
+                              type="text"
+                              value={couponInput}
+                              onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                              placeholder="ENTER CODE"
+                              className="h-9 px-3 text-xs bg-transparent border-border rounded-lg text-foreground focus-visible:ring-1 focus-visible:ring-ring placeholder:text-foreground/30 shadow-none uppercase flex-grow"
+                            />
+                            <Button
+                              type="button"
+                              onClick={handleApplyCoupon}
+                              disabled={!couponInput || validatingCoupon}
+                              className="h-9 text-xs px-4 font-semibold rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-xs cursor-pointer shrink-0"
+                            >
+                              {validatingCoupon ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              ) : (
+                                "Apply"
+                              )}
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+
                       {/* Receipt Calculator */}
                       <div className="pt-4 border-t border-border/40 text-xs space-y-2 text-foreground/70">
                         <div className="flex items-center justify-between">
@@ -717,6 +870,12 @@ export default function EventDetailsPage({
                             {formatPrice(subtotal, event.currency)}
                           </span>
                         </div>
+                        {discount > 0 && (
+                          <div className="flex items-center justify-between text-primary font-medium">
+                            <span>Discount</span>
+                            <span>-{formatPrice(discount, event.currency)}</span>
+                          </div>
+                        )}
                         {taxRate > 0 && (
                           <div className="flex items-center justify-between">
                             <span className="font-light">
