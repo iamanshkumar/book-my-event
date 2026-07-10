@@ -37,6 +37,7 @@ export class BookingService {
             const basePrice = Number(selectedTier.price_per_seat_excluding_tax) * input.quantity;
             
             let discountAmount = 0;
+            let couponToLog: any = null;
             if (input.couponCode) {
                 const cleanCode = input.couponCode.trim().toUpperCase();
                 const coupon = await tx.couponCode.findFirst({
@@ -60,6 +61,32 @@ export class BookingService {
                     throw new Error("Invalid coupon code: Coupon is not valid for this event.");
                 }
 
+                // Check limits
+                if (coupon.usageLimitSameProduct !== null) {
+                    const countSame = await tx.couponUsage.count({
+                        where: {
+                            couponId: coupon.id,
+                            userId: input.userId,
+                            productId: selectedTier.event_id,
+                        }
+                    });
+                    if (countSame >= coupon.usageLimitSameProduct) {
+                        throw new Error("Invalid coupon code: Maximum usage limit reached for this event.");
+                    }
+                }
+
+                if (coupon.usageLimitDifferentProducts !== null) {
+                    const countDiff = await tx.couponUsage.count({
+                        where: {
+                            couponId: coupon.id,
+                            userId: input.userId,
+                        }
+                    });
+                    if (countDiff >= coupon.usageLimitDifferentProducts) {
+                        throw new Error("Invalid coupon code: Maximum usage limit reached across events.");
+                    }
+                }
+
                 if (coupon.type === "PERCENTAGE") {
                     discountAmount = basePrice * (coupon.amount / 100);
                 } else if (coupon.type === "FIXED") {
@@ -67,6 +94,7 @@ export class BookingService {
                 }
 
                 discountAmount = Math.min(discountAmount, basePrice);
+                couponToLog = coupon;
             }
 
             const discountedBase = Math.max(0, basePrice - discountAmount);
@@ -113,6 +141,16 @@ export class BookingService {
                     }
                 }
             });
+
+            if (couponToLog) {
+                await tx.couponUsage.create({
+                    data: {
+                        couponId: couponToLog.id,
+                        userId: input.userId,
+                        productId: selectedTier.event_id,
+                    }
+                });
+            }
 
             return booking;
         });

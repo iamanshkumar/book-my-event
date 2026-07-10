@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { 
-  Sparkles, Plus, Pencil, Trash2, Calendar, Ticket, Loader2, X, AlertTriangle, CheckSquare, Square
+  Sparkles, Plus, Pencil, Trash2, Calendar, Ticket, Loader2, X, CheckSquare, Square 
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -21,6 +21,8 @@ interface Coupon {
   startDate: string;
   endDate: string;
   eventId: string;
+  usageLimitSameProduct?: number | null;
+  usageLimitDifferentProducts?: number | null;
 }
 
 interface EventData {
@@ -46,6 +48,18 @@ export default function CouponsPage() {
   const [formStartDate, setFormStartDate] = useState("");
   const [formEndDate, setFormEndDate] = useState("");
   const [selectedEventIds, setSelectedEventIds] = useState<number[]>([]);
+  
+  // New fields
+  const [usageLimitSameProduct, setUsageLimitSameProduct] = useState("");
+  const [usageLimitDifferentProducts, setUsageLimitDifferentProducts] = useState("");
+
+  // Filters and Search states
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [startDateFilter, setStartDateFilter] = useState("");
+  const [endDateFilter, setEndDateFilter] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   // Multi-select dropdown state
   const [eventSelectOpen, setEventSelectOpen] = useState(false);
@@ -89,13 +103,14 @@ export default function CouponsPage() {
     setFormType("FIXED");
     setFormAmount("");
     setFormStatus(1);
+    setUsageLimitSameProduct("");
+    setUsageLimitDifferentProducts("");
     
     // Default dates (start = now, end = 1 week from now)
     const now = new Date();
     const future = new Date();
     future.setDate(future.getDate() + 7);
     
-    // Format to YYYY-MM-DDTHH:MM
     const toDatetimeLocal = (date: Date) => {
       const pad = (num: number) => String(num).padStart(2, "0");
       return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
@@ -116,6 +131,8 @@ export default function CouponsPage() {
     setFormType(coupon.type);
     setFormAmount(String(coupon.amount));
     setFormStatus(coupon.status);
+    setUsageLimitSameProduct(coupon.usageLimitSameProduct !== null && coupon.usageLimitSameProduct !== undefined ? String(coupon.usageLimitSameProduct) : "");
+    setUsageLimitDifferentProducts(coupon.usageLimitDifferentProducts !== null && coupon.usageLimitDifferentProducts !== undefined ? String(coupon.usageLimitDifferentProducts) : "");
 
     const toDatetimeLocal = (dateStr: string) => {
       const date = new Date(dateStr);
@@ -165,6 +182,8 @@ export default function CouponsPage() {
       startDate: new Date(formStartDate).toISOString(),
       endDate: new Date(formEndDate).toISOString(),
       eventId: selectedEventIds.join(","),
+      usageLimitSameProduct: usageLimitSameProduct ? parseInt(usageLimitSameProduct, 10) : null,
+      usageLimitDifferentProducts: usageLimitDifferentProducts ? parseInt(usageLimitDifferentProducts, 10) : null,
     };
 
     const isEdit = !!editingCoupon;
@@ -226,6 +245,48 @@ export default function CouponsPage() {
     return `${matching[0].eventName}, ${matching[1].eventName} + ${matching.length - 2} more`;
   };
 
+  const getCouponStatus = (coupon: Coupon) => {
+    const isExpired = new Date() > new Date(coupon.endDate);
+    const isFuture = new Date() < new Date(coupon.startDate);
+    if (coupon.status === 0) return "DISABLED";
+    if (isExpired) return "EXPIRED";
+    if (isFuture) return "SCHEDULED";
+    return "ACTIVE";
+  };
+
+  // Matching and filtering logic
+  const filteredCoupons = coupons.filter((coupon) => {
+    const matchesSearch = 
+      coupon.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      coupon.code.toLowerCase().includes(searchQuery.toLowerCase());
+    if (!matchesSearch) return false;
+
+    if (statusFilter !== "ALL") {
+      const status = getCouponStatus(coupon);
+      if (status !== statusFilter) return false;
+    }
+
+    if (startDateFilter) {
+      const filterDate = new Date(startDateFilter);
+      const couponStart = new Date(coupon.startDate);
+      if (couponStart < filterDate) return false;
+    }
+
+    if (endDateFilter) {
+      const filterDate = new Date(endDateFilter);
+      const couponEnd = new Date(coupon.endDate);
+      if (couponEnd > filterDate) return false;
+    }
+
+    return true;
+  });
+
+  const totalItems = filteredCoupons.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+  const activePage = Math.min(currentPage, totalPages);
+  const startIndex = (activePage - 1) * itemsPerPage;
+  const paginatedCoupons = filteredCoupons.slice(startIndex, startIndex + itemsPerPage);
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-2">
@@ -252,113 +313,201 @@ export default function CouponsPage() {
         </Button>
       </div>
 
-      {coupons.length === 0 ? (
+      {/* Filters and Search toolbar */}
+      <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-5 bg-card border border-border p-4 rounded-xl shadow-xs">
+        <div className="space-y-1.5 md:col-span-2">
+          <Label htmlFor="search" className="text-[10px] uppercase font-bold tracking-wider text-foreground/50">Search</Label>
+          <Input 
+            id="search" 
+            placeholder="Search by code or name..." 
+            value={searchQuery}
+            onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+            className="h-9 px-3 text-xs bg-transparent shadow-none"
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="statusFilter" className="text-[10px] uppercase font-bold tracking-wider text-foreground/50">Status</Label>
+          <select
+            id="statusFilter"
+            value={statusFilter}
+            onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
+            className="w-full bg-background border border-border text-foreground text-xs rounded-md px-3 h-9 focus:outline-none focus:ring-1 focus:ring-primary shadow-none"
+          >
+            <option value="ALL">All Statuses</option>
+            <option value="ACTIVE">Active</option>
+            <option value="EXPIRED">Expired</option>
+            <option value="DISABLED">Disabled</option>
+            <option value="SCHEDULED">Scheduled</option>
+          </select>
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="startDateFilter" className="text-[10px] uppercase font-bold tracking-wider text-foreground/50">Start Date</Label>
+          <Input 
+            id="startDateFilter" 
+            type="date"
+            value={startDateFilter}
+            onChange={(e) => { setStartDateFilter(e.target.value); setCurrentPage(1); }}
+            className="h-9 px-3 text-xs bg-transparent shadow-none"
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="endDateFilter" className="text-[10px] uppercase font-bold tracking-wider text-foreground/50">End Date</Label>
+          <Input 
+            id="endDateFilter" 
+            type="date"
+            value={endDateFilter}
+            onChange={(e) => { setEndDateFilter(e.target.value); setCurrentPage(1); }}
+            className="h-9 px-3 text-xs bg-transparent shadow-none"
+          />
+        </div>
+      </div>
+
+      {filteredCoupons.length === 0 ? (
         <Card className="border border-dashed border-border p-12 text-center flex flex-col items-center justify-center gap-3">
           <div className="h-10 w-10 rounded-full bg-primary/5 flex items-center justify-center">
             <Ticket className="h-5 w-5 text-primary/60" />
           </div>
           <div>
-            <h3 className="font-semibold text-sm">No coupons configured</h3>
+            <h3 className="font-semibold text-sm">No coupons found</h3>
             <p className="text-xs text-foreground/50 max-w-sm mt-1">
-              Add discount codes for attendee checkouts to drive event ticket reservations.
+              Add discount codes for attendee checkouts or try adjusting your search filters.
             </p>
           </div>
-          <Button onClick={handleOpenAddModal} variant="outline" className="h-8.5 px-3.5 text-xs font-semibold mt-2 cursor-pointer">
-            Create First Coupon
-          </Button>
+          {coupons.length === 0 && (
+            <Button onClick={handleOpenAddModal} variant="outline" className="h-8.5 px-3.5 text-xs font-semibold mt-2 cursor-pointer">
+              Create First Coupon
+            </Button>
+          )}
         </Card>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {coupons.map((coupon) => {
-            const isExpired = new Date() > new Date(coupon.endDate);
-            const isFuture = new Date() < new Date(coupon.startDate);
-            const isActive = coupon.status === 1 && !isExpired && !isFuture;
+        <div className="border border-border rounded-xl bg-card overflow-hidden shadow-xs">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="bg-foreground/[0.015] border-b border-border/60 text-foreground/60 font-bold uppercase tracking-wider text-[10px]">
+                  <th className="p-4">Code</th>
+                  <th className="p-4">Name</th>
+                  <th className="p-4">Type / Value</th>
+                  <th className="p-4">Validity Period</th>
+                  <th className="p-4">Per User Limit (Same/Diff)</th>
+                  <th className="p-4">Status</th>
+                  <th className="p-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/40">
+                {paginatedCoupons.map((coupon) => {
+                  const status = getCouponStatus(coupon);
+                  const isPercentage = coupon.type === "PERCENTAGE";
 
-            return (
-              <Card key={coupon.id} className="border border-border/80 bg-card overflow-hidden shadow-none flex flex-col justify-between">
-                <CardHeader className="p-5 border-b border-border/40 bg-foreground/[0.005]">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-bold tracking-tight text-sm uppercase px-2.5 py-1.5 rounded-lg bg-primary/10 text-primary border border-primary/20">
-                      {coupon.code}
-                    </span>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                      isActive 
-                        ? "bg-green-500/10 text-green-500 border border-green-500/10" 
-                        : isExpired
-                          ? "bg-rose-500/10 text-rose-500 border border-rose-500/10"
-                          : coupon.status === 0
-                            ? "bg-zinc-500/10 text-zinc-500 border border-zinc-500/10"
-                            : "bg-amber-500/10 text-amber-500 border border-amber-500/10"
-                    }`}>
-                      {isActive 
-                        ? "Active" 
-                        : isExpired 
-                          ? "Expired" 
-                          : coupon.status === 0 
-                            ? "Disabled" 
-                            : "Scheduled"}
-                    </span>
-                  </div>
-                  <CardTitle className="text-sm font-bold tracking-tight mt-3 text-card-foreground">
-                    {coupon.name}
-                  </CardTitle>
-                  {coupon.description && (
-                    <CardDescription className="text-xs font-light text-foreground/60 line-clamp-2 mt-1">
-                      {coupon.description}
-                    </CardDescription>
-                  )}
-                </CardHeader>
-                
-                <CardContent className="p-5 flex-grow space-y-3.5 text-xs text-foreground/75">
-                  <div className="flex justify-between items-center">
-                    <span className="text-foreground/45 font-medium">Type:</span>
-                    <span className="font-semibold text-foreground">
-                      {coupon.type === "PERCENTAGE" ? "Percentage Off" : "Fixed Discount"}
-                    </span>
-                  </div>
+                  return (
+                    <tr key={coupon.id} className="hover:bg-foreground/[0.005] transition-colors">
+                      <td className="p-4 font-semibold">
+                        <span className="font-bold tracking-tight uppercase px-2.5 py-1.5 rounded-lg bg-primary/10 text-primary border border-primary/20">
+                          {coupon.code}
+                        </span>
+                      </td>
+                      <td className="p-4">
+                        <div className="font-semibold text-foreground">{coupon.name}</div>
+                        {coupon.description && (
+                          <div className="text-[10px] text-foreground/50 truncate max-w-[200px]" title={coupon.description}>
+                            {coupon.description}
+                          </div>
+                        )}
+                      </td>
+                      <td className="p-4 font-medium text-foreground">
+                        <div>{isPercentage ? "Percentage" : "Fixed amount"}</div>
+                        <div className="text-[10px] text-foreground/50 font-bold">
+                          {isPercentage ? `${coupon.amount}%` : `${coupon.amount} unit`}
+                        </div>
+                      </td>
+                      <td className="p-4 text-foreground/80 font-medium">
+                        <div>From: {new Date(coupon.startDate).toLocaleDateString()}</div>
+                        <div>To: {new Date(coupon.endDate).toLocaleDateString()}</div>
+                      </td>
+                      <td className="p-4 font-medium text-foreground/85">
+                        <div>Same Product: <span className="font-semibold text-foreground">{coupon.usageLimitSameProduct !== null && coupon.usageLimitSameProduct !== undefined ? coupon.usageLimitSameProduct : "Unlimited"}</span></div>
+                        <div>Across Events: <span className="font-semibold text-foreground">{coupon.usageLimitDifferentProducts !== null && coupon.usageLimitDifferentProducts !== undefined ? coupon.usageLimitDifferentProducts : "Unlimited"}</span></div>
+                      </td>
+                      <td className="p-4">
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                          status === "ACTIVE" 
+                            ? "bg-green-500/10 text-green-500 border border-green-500/10" 
+                            : status === "EXPIRED"
+                              ? "bg-rose-500/10 text-rose-500 border border-rose-500/10"
+                              : status === "DISABLED"
+                                ? "bg-zinc-500/10 text-zinc-500 border border-zinc-500/10"
+                                : "bg-amber-500/10 text-amber-500 border border-amber-500/10"
+                        }`}>
+                          {status}
+                        </span>
+                      </td>
+                      <td className="p-4 text-right space-x-1 shrink-0">
+                        <Button 
+                          onClick={() => handleOpenEditModal(coupon)} 
+                          variant="ghost" 
+                          size="icon"
+                          className="h-8 w-8 text-foreground/60 hover:bg-foreground/5 cursor-pointer border-none"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button 
+                          onClick={() => handleDelete(coupon.id, coupon.code)} 
+                          variant="ghost" 
+                          size="icon"
+                          className="h-8 w-8 text-destructive hover:bg-destructive/10 cursor-pointer border-none"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
 
-                  <div className="flex justify-between items-center">
-                    <span className="text-foreground/45 font-medium">Discount Value:</span>
-                    <span className="font-semibold text-foreground text-sm">
-                      {coupon.type === "PERCENTAGE" ? `${coupon.amount}%` : `${coupon.amount} unit`}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between items-center">
-                    <span className="text-foreground/45 font-medium">Validity:</span>
-                    <span className="font-medium text-foreground flex items-center gap-1">
-                      <Calendar className="h-3.5 w-3.5 text-foreground/40" />
-                      {new Date(coupon.startDate).toLocaleDateString()} - {new Date(coupon.endDate).toLocaleDateString()}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between items-start gap-3 border-t border-border/40 pt-3">
-                    <span className="text-foreground/45 font-medium shrink-0">Events:</span>
-                    <span className="font-medium text-foreground text-right leading-tight">
-                      {getEventNamesList(coupon.eventId)}
-                    </span>
-                  </div>
-                </CardContent>
-
-                <div className="p-4 border-t border-border/40 bg-foreground/[0.005] flex items-center justify-end gap-2.5">
-                  <Button 
-                    onClick={() => handleOpenEditModal(coupon)} 
-                    variant="ghost" 
-                    className="h-8.5 px-3 text-xs font-medium text-foreground/70 hover:bg-foreground/5 cursor-pointer border-none"
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="p-4 border-t border-border/40 flex items-center justify-between text-xs text-foreground/60 bg-foreground/[0.005]">
+              <span>
+                Showing page {activePage} of {totalPages} ({totalItems} total coupons)
+              </span>
+              <div className="flex items-center gap-1.5">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={activePage === 1}
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  className="h-8 px-2 text-[10px] font-semibold border-border disabled:opacity-40 cursor-pointer"
+                >
+                  Previous
+                </Button>
+                {Array.from({ length: totalPages }).map((_, i) => (
+                  <Button
+                    key={i}
+                    type="button"
+                    variant={activePage === i + 1 ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`h-8 w-8 text-[10px] font-semibold p-0 ${activePage === i + 1 ? "" : "border-border"} cursor-pointer`}
                   >
-                    <Pencil className="h-3.5 w-3.5 mr-1" /> Edit
+                    {i + 1}
                   </Button>
-                  <Button 
-                    onClick={() => handleDelete(coupon.id, coupon.code)} 
-                    variant="ghost" 
-                    className="h-8.5 px-3 text-xs font-medium text-destructive hover:bg-destructive/10 cursor-pointer border-none"
-                  >
-                    <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
-                  </Button>
-                </div>
-              </Card>
-            );
-          })}
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={activePage === totalPages}
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  className="h-8 px-2 text-[10px] font-semibold border-border disabled:opacity-40 cursor-pointer"
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -372,7 +521,7 @@ export default function CouponsPage() {
                   {editingCoupon ? "Edit Coupon Details" : "Add New Coupon Code"}
                 </CardTitle>
                 <CardDescription className="text-xs font-light text-foreground/50 mt-1">
-                  Configure discount value, date ranges, and allowed events.
+                  Configure discount value, date ranges, limits, and allowed events.
                 </CardDescription>
               </div>
               <Button 
@@ -458,6 +607,53 @@ export default function CouponsPage() {
                     onChange={(e) => setFormAmount(e.target.value)}
                     required
                   />
+                </div>
+              </div>
+
+              {/* Usage Limit Fields */}
+              <div className="grid gap-4 sm:grid-cols-2 border-t border-border/40 pt-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="usageLimitSameProduct" className="text-xs font-semibold text-foreground/75">
+                    Usage Limit (Same Event)
+                  </Label>
+                  <Input
+                    id="usageLimitSameProduct"
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={usageLimitSameProduct}
+                    placeholder="Unlimited"
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === "" || /^\d+$/.test(val)) {
+                        setUsageLimitSameProduct(val);
+                      }
+                    }}
+                    className="shadow-none"
+                  />
+                  <p className="text-[10px] text-foreground/40 font-light">Max coupon uses per user for the same event.</p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="usageLimitDifferentProducts" className="text-xs font-semibold text-foreground/75">
+                    Usage Limit (Across Events)
+                  </Label>
+                  <Input
+                    id="usageLimitDifferentProducts"
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={usageLimitDifferentProducts}
+                    placeholder="Unlimited"
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === "" || /^\d+$/.test(val)) {
+                        setUsageLimitDifferentProducts(val);
+                      }
+                    }}
+                    className="shadow-none"
+                  />
+                  <p className="text-[10px] text-foreground/40 font-light">Max coupon uses per user across different events.</p>
                 </div>
               </div>
 

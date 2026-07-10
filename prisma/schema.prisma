@@ -30,6 +30,7 @@ model User {
   bookings Booking[]
   address  OrganizerAddress?
   couponCodes CouponCode[]
+  couponUsages CouponUsage[]
 
   @@map("users")
 }
@@ -65,6 +66,7 @@ model Event {
   organizer   User         @relation(fields: [organizerId], references: [id], onDelete: Cascade)
   ticketTiers TicketTier[]
   bookings    Booking[]
+  couponUsages CouponUsage[]
 
   @@map("events")
 }
@@ -166,9 +168,27 @@ model CouponCode {
   endDate     DateTime @map("end_date")
   eventId     String   @map("event_id") @db.Text
 
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  usageLimitSameProduct       Int? @map("usage_limit_same_product")
+  usageLimitDifferentProducts Int? @map("usage_limit_different_products")
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  usages      CouponUsage[]
 
   @@unique([userId, code])
   @@index([code])
   @@map("coupon_codes")
+}
+
+model CouponUsage {
+  id        Int      @id @default(autoincrement()) @map("coupon_usage_id")
+  couponId  Int      @map("coupon_id")
+  userId    Int      @map("user_id")
+  productId Int      @map("product_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  coupon    CouponCode @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event     Event      @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("coupon_usage")
 }
