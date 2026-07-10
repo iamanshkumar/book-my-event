@@ -16,7 +16,7 @@ The application features a granular role-based access control system supporting 
 - Premium active teaser media player on checkout screens supporting multiple switching video trailers (YouTube, Instagram Reels, Vimeo, and raw HTML5 video files) with selector tabs.
 - Search-engine-optimized dynamic metadata layout for Event Details page and static layouts for login, register, and dashboard portals.
 - **Terms & Conditions Section:** Displays a custom terms & conditions layout block on the public event details screen when configured by the organizer.
-- **Real-Time Coupon Application:** Supports applying coupon codes directly at checkout, applying fixed/percentage discount deductions instantly to subtotal, recalculating tax on the discounted base, and removing coupons to restore default pricing.
+- **Real-Time Coupon Application:** Supports applying coupon codes directly at checkout, applying fixed/percentage discount deductions instantly to subtotal, recalculating tax on the discounted base, and removing coupons to restore default pricing. Enforces user-level usage limits dynamically per event or globally across events.
 
 ### 2. Onboarding & Workspace Access
 - **Separated Registration:** Distinct registration flows for Attendees (`/register`) and Organizers (`/register/organizer`) to secure default privileges.
@@ -39,7 +39,7 @@ The application features a granular role-based access control system supporting 
 - **Minimum Age Checks:** Enforces age verification checks during manual creation, updating, and bulk CSV uploads.
 - **Event Terms & Conditions:** Supports adding customized event-level terms and conditions manually or via bulk CSV upload templates.
 - **UI Consistency:** The "Age Restrictions" and "Terms & Conditions" panels are aligned inside the event specifications card on both event creation and event update panels.
-- **Coupon Code Management:** Allows organizers to list, create, update, and delete custom coupons. Features validation checks for unique codes per organizer, status toggles, fixed/percentage discount modes, validity durations, and allowed events.
+- **Coupon Code Management:** Redesigned list/table view with pagination, search, status, and start/end date filters. Allows organizers to list, create, update, and delete custom coupons. Features validation checks for unique codes per organizer, status toggles, fixed/percentage discount modes, validity durations, allowed events, and custom numeric per-user usage limits (same event limit, and global across-events limit).
 - Drag-and-drop/select-file local upload widget for event banners and thumbnails, storing media securely on server storage.
 - Scheduling Wizard allowing organizers to configure ticket tiers with custom seat capacities, price configurations, and tax rates.
 - Editor panel providing specification updates, multiple trailer video link stacks, and category selection.
