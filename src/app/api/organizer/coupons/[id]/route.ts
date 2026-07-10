@@ -27,7 +27,7 @@ export async function PUT(request: Request, context: RouteContext) {
     }
 
     const body = await request.json();
-    const { name, code, description, type, amount, status, startDate, endDate, eventId } = body;
+    const { name, code, description, type, amount, status, startDate, endDate, eventId, usageLimitSameProduct, usageLimitDifferentProducts } = body;
 
     if (!name || !code || !type || amount === undefined || !startDate || !endDate || eventId === undefined) {
       return NextResponse.json({ error: "Missing mandatory fields" }, { status: 400 });
@@ -63,6 +63,14 @@ export async function PUT(request: Request, context: RouteContext) {
       return NextResponse.json({ error: "You already have another coupon with this code." }, { status: 400 });
     }
 
+    const parsedLimitSame = (usageLimitSameProduct !== undefined && usageLimitSameProduct !== null && usageLimitSameProduct !== "") 
+      ? parseInt(String(usageLimitSameProduct), 10) 
+      : null;
+    
+    const parsedLimitDiff = (usageLimitDifferentProducts !== undefined && usageLimitDifferentProducts !== null && usageLimitDifferentProducts !== "") 
+      ? parseInt(String(usageLimitDifferentProducts), 10) 
+      : null;
+
     const updatedCoupon = await prisma.couponCode.update({
       where: { id: couponId },
       data: {
@@ -75,6 +83,8 @@ export async function PUT(request: Request, context: RouteContext) {
         startDate: new Date(startDate),
         endDate: new Date(endDate),
         eventId: String(eventId),
+        usageLimitSameProduct: parsedLimitSame,
+        usageLimitDifferentProducts: parsedLimitDiff,
       },
     });
 
