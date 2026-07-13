@@ -173,3 +173,31 @@ export async function updateTermsSettings(userId = 0, data: any) {
     await upsertSetting(userId, "signupTermsContent", data.signupTermsContent || "");
     return getTermsSettings(userId);
 }
+
+export async function getMaintenanceSettings(userId = 0) {
+    const map = await getSettingsMap(userId);
+
+    const maintenanceModeEnabled = map["maintenanceModeEnabled"] !== undefined ? map["maintenanceModeEnabled"] : "0";
+    const maintenanceContent = map["maintenanceContent"] !== undefined ? map["maintenanceContent"] : "The website is currently undergoing scheduled maintenance. Please check back shortly.";
+    const maintenanceAllowedIps = map["maintenanceAllowedIps"] !== undefined ? map["maintenanceAllowedIps"] : "";
+
+    // Write defaults to DB if not set
+    if (map["maintenanceModeEnabled"] === undefined) await upsertSetting(userId, "maintenanceModeEnabled", maintenanceModeEnabled);
+    if (map["maintenanceContent"] === undefined) await upsertSetting(userId, "maintenanceContent", maintenanceContent);
+    if (map["maintenanceAllowedIps"] === undefined) await upsertSetting(userId, "maintenanceAllowedIps", maintenanceAllowedIps);
+
+    return {
+        id: 0,
+        userId,
+        maintenanceModeEnabled,
+        maintenanceContent,
+        maintenanceAllowedIps
+    };
+}
+
+export async function updateMaintenanceSettings(userId = 0, data: any) {
+    await upsertSetting(userId, "maintenanceModeEnabled", data.maintenanceModeEnabled || "0");
+    await upsertSetting(userId, "maintenanceContent", data.maintenanceContent || "");
+    await upsertSetting(userId, "maintenanceAllowedIps", data.maintenanceAllowedIps || "");
+    return getMaintenanceSettings(userId);
+}

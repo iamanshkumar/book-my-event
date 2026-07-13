@@ -4,10 +4,12 @@ import {
   getGeneralSettings,
   getSmtpSettings,
   getTermsSettings,
+  getMaintenanceSettings,
   updateGeneralSettings,
   updateSmtpSettings,
   updateCaptchaSettings,
-  updateTermsSettings
+  updateTermsSettings,
+  updateMaintenanceSettings
 } from "@/backend/lib/settings";
 import { error } from "console";
 import { headers } from "next/headers";
@@ -33,8 +35,9 @@ export async function GET(){
         const smtp = await getSmtpSettings();
         const captcha = await getCaptchaSettings();
         const terms = await getTermsSettings();
+        const maintenance = await getMaintenanceSettings();
 
-        return NextResponse.json({general , smtp , captcha , terms} , {status : 200});
+        return NextResponse.json({general , smtp , captcha , terms, maintenance} , {status : 200});
     }catch(err : any){
         return NextResponse.json({error : err} , {status : 500});
     }
@@ -71,6 +74,11 @@ export async function PUT(request : Request){
         if(type==="terms"){
             const updated = await updateTermsSettings(0, data);
             return NextResponse.json({message : "Terms settings updated" , settings : updated} , {status : 200});
+        }
+
+        if(type==="maintenance"){
+            const updated = await updateMaintenanceSettings(0, data);
+            return NextResponse.json({message : "Maintenance settings updated" , settings : updated} , {status : 200});
         }
 
         return NextResponse.json({message : "Invalid settings category"} , {status : 400});
