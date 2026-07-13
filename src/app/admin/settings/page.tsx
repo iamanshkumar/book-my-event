@@ -3,7 +3,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
-import { Globe, Mail, ShieldCheck, FileText } from "lucide-react";
+import { Globe, Mail, ShieldCheck, FileText, Wrench } from "lucide-react";
 
 export default function AdminSettingsPage() {
   const router = useRouter();
@@ -74,6 +74,21 @@ export default function AdminSettingsPage() {
             <h3 className="font-bold text-sm">Terms & Conditions</h3>
             <p className="text-[11px] text-foreground/50 mt-1">
               Configure signup terms and conditions and enforce validation checkbox.
+            </p>
+          </div>
+        </Card>
+
+        <Card
+          className="border border-border bg-card shadow-none hover:border-primary/40 cursor-pointer transition-all p-5 flex flex-col gap-3"
+          onClick={() => router.push("/admin/settings/maintenance")}
+        >
+          <div className="bg-primary/10 text-primary p-3 w-fit rounded-lg border border-primary/20">
+            <Wrench className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="font-bold text-sm">Maintenance Mode</h3>
+            <p className="text-[11px] text-foreground/50 mt-1">
+              Configure system downtime, status banner contents, and IP exception lists.
             </p>
           </div>
         </Card>

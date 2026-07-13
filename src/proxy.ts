@@ -36,6 +36,60 @@ export async function proxy(request: NextRequest) {
     }
   }
 
+  const userRole = payload ? String(payload.role) : null;
+  const isAdmin = userRole === 'ADMIN';
+
+  const isAdminPath = pathname.startsWith('/admin') || pathname.startsWith('/api/admin');
+  const isStatusApi = pathname === '/api/maintenance/status';
+  const isMaintenancePage = pathname === '/maintenance';
+
+  if (!isAdminPath && !isStatusApi && !isMaintenancePage && !isAdmin) {
+    try {
+      const baseUrl = request.nextUrl.origin;
+      const maintenanceRes = await fetch(`${baseUrl}/api/maintenance/status?t=${Date.now()}`, { cache: 'no-store' });
+      if (maintenanceRes.ok) {
+        const maint = await maintenanceRes.json();
+        if (maint.maintenanceModeEnabled === "1") {
+          // Retrieve and clean client IP
+          let clientIp = (request as any).ip || request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || '';
+          if (clientIp.includes(',')) {
+            clientIp = clientIp.split(',')[0].trim();
+          }
+          clientIp = clientIp.trim();
+          if (clientIp.startsWith('::ffff:')) {
+            clientIp = clientIp.substring(7);
+          }
+
+          const allowedIps = (maint.maintenanceAllowedIps || "")
+            .split(',')
+            .map((ip: string) => ip.trim())
+            .filter(Boolean);
+
+          const isIpAllowed = allowedIps.includes(clientIp);
+
+          if (!isIpAllowed) {
+            if (pathname.startsWith('/api/')) {
+              return NextResponse.json(
+                { error: "Service Temporarily Unavailable. The website is currently undergoing scheduled maintenance." },
+                { status: 503 }
+              );
+            } else {
+              return NextResponse.rewrite(new URL('/maintenance', request.url), {
+                status: 503,
+                headers: {
+                  'Content-Type': 'text/html; charset=utf-8',
+                  'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate'
+                }
+              });
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.error("[Proxy] Maintenance check failed:", e);
+    }
+  }
+
   // 1. Auth routes redirect logic
   if (AUTH_ROUTES.some((route) => pathname.startsWith(route))) {
     if (payload) {
