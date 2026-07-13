@@ -21,6 +21,7 @@ const countriesList = Object.entries(countriesObject).map(([alpha2, name]) => ({
 
 export default function OrganizerAddressPage() {
   const [type, setType] = useState<string>("Individual");
+  const [companyName, setCompanyName] = useState("");
   const [street1, setStreet1] = useState("");
   const [street2, setStreet2] = useState("");
   const [state, setState] = useState("");
@@ -40,6 +41,7 @@ export default function OrganizerAddressPage() {
         if (res.ok && data.address) {
           const addr = data.address;
           setType(addr.type || "Individual");
+          setCompanyName(addr.companyName || "");
           setStreet1(addr.street1 || "");
           setStreet2(addr.street2 || "");
           setState(addr.state || "");
@@ -59,7 +61,7 @@ export default function OrganizerAddressPage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!type || !street1 || !state || !zipCode || !country || !phoneNumber) {
+    if (!type || !street1 || !state || !zipCode || !country || !phoneNumber || !companyName) {
       toast.error("Please fill in all compulsory address fields.");
       return;
     }
@@ -71,6 +73,7 @@ export default function OrganizerAddressPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           type,
+          companyName,
           street1,
           street2: street2 || null,
           state,
@@ -142,6 +145,20 @@ export default function OrganizerAddressPage() {
                   <SelectItem value="Company">Registered Company</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            {/* Company Name */}
+            <div className="space-y-1.5">
+              <Label htmlFor="companyName" className="text-foreground/80 font-medium">Company Name *</Label>
+              <Input
+                id="companyName"
+                type="text"
+                placeholder="e.g. Acme Corporation / My Org Name"
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                required
+                className="h-10 bg-transparent border-border rounded-md px-3 shadow-none text-card-foreground"
+              />
             </div>
 
             {/* Street Line 1 */}
