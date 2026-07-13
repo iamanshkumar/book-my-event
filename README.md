@@ -44,20 +44,23 @@ The application features a granular role-based access control system supporting 
 - Scheduling Wizard allowing organizers to configure ticket tiers with custom seat capacities, price configurations, and tax rates.
 - Editor panel providing specification updates, multiple trailer video link stacks, and category selection.
 - Bookings ledger representing reservation history, attendee details, seat counts, and status tracking.
+- **Organizer Profile Address Details:** Enforces profile verification and completion. Organizers must specify required address fields including street location, state, zip code, country, contact number, and a compulsory **Company Name** textbox validated and saved in the registry.
 
 ### 5. Administrative Control Panel
 - Global overview statistics dashboard capturing system-wide platform revenues, registered users, active listings, and ticket sales.
 - Diagnostic logs and quick action widgets navigating to control modules.
 - User management panel filtering profiles and executing role privileges (CUSTOMER, ORGANIZER, ADMIN).
 - Event moderation interface allowing admins to audit hosted events and perform administrative removals.
-- Website settings control panel allowing admins to dynamically change general branding configurations, SMTP mailers, signup terms, and security verification switches.
+- Website settings control panel allowing admins to dynamically change general branding configurations, SMTP mailers, signup terms, security verification switches, and **Maintenance Mode settings** (toggling site status, customizing downtime text messages, and configuring allowed IP bypass lists).
 
-### 6. Dynamic Branding, Mail, & CAPTCHA Security
+### 6. Branding, CAPTCHA Security, & Maintenance Mode
 - **General Branding:** Dynamically updates Website Title (branding name), Website Meta Title (SEO browser tab name), Hero Headline, and Website Logo.
 - **Dynamic favicon:** Automatically updates browser tab favicon to match the uploaded website logo.
 - **Signup Terms Management:** Dynamic subsettings view allowing admins to enable, disable, and modify the global Terms & Conditions content for registration.
 - **Dynamic SMTP Mailer:** Features a central mail dispatcher utilizing **Nodemailer** to route all platform notifications (bookings, OTPs, verifications) dynamically via any custom SMTP server (such as Mailtrap, Gmail, SES, etc.) configured in settings, falling back to the Resend API if host is default `"localhost"`.
 - **Multi-Type reCAPTCHA Security:** Enables and disables secure CAPTCHA validation challenges on **Register Page** and **Forgot Password Page** supporting three distinct versions (reCAPTCHA v3 Score-Based, reCAPTCHA v2 Checkbox, reCAPTCHA v2 Invisible Badge). Performs score validation (`score >= 0.5`) for v3 and operates in Mock mode when no site keys are registered.
+- **System Maintenance Mode:** Supports toggling site access offline. Blocked traffic is internally rewritten to a `/maintenance` page displaying customized administrator messages with a proper `503 Service Unavailable` status to protect SEO. Automatically allows bypasses for users with the `ADMIN` role or clients connecting from configured allowed IP addresses.
+
 
 ### 7. Multi-Currency Management & Localization
 - **Curated Currency Selection:** Organizers can choose up to 5 allowed currencies and designate 1 default currency inside a dedicated settings panel.
