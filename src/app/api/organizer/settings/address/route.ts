@@ -36,11 +36,11 @@ export async function PUT(request: Request) {
 
         const organizerId = parseInt(organizerIdStr, 10);
         const body = await request.json();
-        const { type, street1, street2, state, zipCode, country, phoneNumber } = body;
+        const { type, street1, street2, state, zipCode, country, phoneNumber, companyName } = body;
 
         // Input Validations
-        if (!type || !street1 || !state || !zipCode || !country || !phoneNumber) {
-            return NextResponse.json({ error: "Missing required address fields." }, { status: 400 });
+        if (!type || !street1 || !state || !zipCode || !country || !phoneNumber || !companyName) {
+            return NextResponse.json({ error: "Missing required address fields. Company Name is required." }, { status: 400 });
         }
 
         if (type !== "Individual" && type !== "Company") {
@@ -56,7 +56,8 @@ export async function PUT(request: Request) {
                 state,
                 zipCode,
                 country,
-                phoneNumber
+                phoneNumber,
+                companyName
             },
             create: {
                 userId: organizerId,
@@ -66,7 +67,8 @@ export async function PUT(request: Request) {
                 state,
                 zipCode,
                 country,
-                phoneNumber
+                phoneNumber,
+                companyName
             }
         });
 
