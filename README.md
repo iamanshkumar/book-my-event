@@ -35,7 +35,7 @@ The application features a granular role-based access control system supporting 
 
 ### 4. Organizer Workspace
 - Analytics dashboard presenting total revenue summaries, global ticket sales counts, event publishing stats, and fill-rate loaders.
-- Managed event catalog containing listings, schedule details, locations, dynamic country dropdowns, and pincode settings.
+- **Enhanced Event Catalog Table:** Redesigned events list view into a responsive data table featuring text search, start-date filtering, multi-field sorting (Date, Name, ID), customizable page sizes (20, 50, 100, 200), and client-side CSV data exports.
 - **Minimum Age Checks:** Enforces age verification checks during manual creation, updating, and bulk CSV uploads.
 - **Event Terms & Conditions:** Supports adding customized event-level terms and conditions manually or via bulk CSV upload templates.
 - **UI Consistency:** The "Age Restrictions" and "Terms & Conditions" panels are aligned inside the event specifications card on both event creation and event update panels.
@@ -50,7 +50,7 @@ The application features a granular role-based access control system supporting 
 - Global overview statistics dashboard capturing system-wide platform revenues, registered users, active listings, and ticket sales.
 - Diagnostic logs and quick action widgets navigating to control modules.
 - User management panel filtering profiles and executing role privileges (CUSTOMER, ORGANIZER, ADMIN).
-- Event moderation interface allowing admins to audit hosted events and perform administrative removals.
+- **Enhanced Event Moderation Table:** Features advanced filtering controls by host organizer and start date, text search, multi-field sorting (Date, Name, ID), customizable page sizes (20, 50, 100, 200), and CSV data exports.
 - Website settings control panel allowing admins to dynamically change general branding configurations, SMTP mailers, signup terms, security verification switches, and **Maintenance Mode settings** (toggling site status, customizing downtime text messages, and configuring allowed IP bypass lists).
 
 ### 6. Branding, CAPTCHA Security, & Maintenance Mode
