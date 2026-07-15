@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/backend/lib/prisma";
 import { headers } from "next/headers";
 import { EventCategory } from "@prisma/client";
+import { isOrganizer, isAdmin } from "@/backend/lib/role";
 
 function parseCSV(text: string): string[][] {
   const lines: string[][] = [];
@@ -59,10 +60,9 @@ function parseCSV(text: string): string[][] {
 export async function POST(req: NextRequest) {
   try {
     const headerList = await headers();
-    const role = headerList.get("x-user-role");
     const userIdStr = headerList.get("x-user-id");
 
-    if (role !== "ORGANIZER" && role !== "ADMIN") {
+    if (!isOrganizer(headerList) && !isAdmin(headerList)) {
       return NextResponse.json(
         { error: "Access denied. Only organizers can bulk upload." },
         { status: 403 },

@@ -2,6 +2,8 @@ import { prisma } from "@/backend/lib/prisma";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 
+import { isAdmin } from "@/backend/lib/role";
+
 type RouteContext = { params: Promise<{ id: string }> };
 
 export async function PATCH(request: Request, context: RouteContext){
@@ -10,7 +12,7 @@ export async function PATCH(request: Request, context: RouteContext){
         const targetUserId = parseInt(id , 10);
 
         const headersList = await headers();
-        if (headersList.get('x-user-role') !== 'ADMIN') {
+        if (!isAdmin(headersList)) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
