@@ -38,13 +38,14 @@ export async function getGeneralSettings(userId = 0) {
     const metaDescription = map["metaDescription"] !== undefined ? map["metaDescription"] : "Find live shows, concerts, workshops, and theater events. Secure your seats and book ticket passes online.";
     const websiteLogo = map["websiteLogo"] !== undefined ? map["websiteLogo"] : null;
     const heroHeading = map["heroHeading"] !== undefined ? map["heroHeading"] : "Unlock Unforgettable Live Experiences";
+    const isDemoMode = map["isDemoMode"] !== undefined ? map["isDemoMode"] : "0";
 
-    // Write default values to DB if they were not set
     if (map["websiteTitle"] === undefined) await upsertSetting(userId, "websiteTitle", websiteTitle);
     if (map["metaTitle"] === undefined) await upsertSetting(userId, "metaTitle", metaTitle);
     if (map["metaDescription"] === undefined) await upsertSetting(userId, "metaDescription", metaDescription);
     if (map["websiteLogo"] === undefined) await upsertSetting(userId, "websiteLogo", websiteLogo || "");
     if (map["heroHeading"] === undefined) await upsertSetting(userId, "heroHeading", heroHeading);
+    if (map["isDemoMode"] === undefined) await upsertSetting(userId, "isDemoMode", isDemoMode);
 
     return {
         id: 0,
@@ -53,7 +54,8 @@ export async function getGeneralSettings(userId = 0) {
         metaTitle,
         metaDescription,
         websiteLogo: websiteLogo || null,
-        heroHeading
+        heroHeading,
+        isDemoMode
     };
 }
 
@@ -126,6 +128,7 @@ export async function updateGeneralSettings(userId = 0, data: any) {
     await upsertSetting(userId, "metaDescription", data.metaDescription || "Find live shows, concerts, workshops, and theater events. Secure your seats and book ticket passes online.");
     await upsertSetting(userId, "websiteLogo", data.websiteLogo || "");
     await upsertSetting(userId, "heroHeading", data.heroHeading || "Unlock Unforgettable Live Experiences");
+    await upsertSetting(userId, "isDemoMode", data.isDemoMode || "0");
     return getGeneralSettings(userId);
 }
 

@@ -13,6 +13,7 @@ export default function AttendeeLayoutClient({ children }: { children: React.Rea
   const [user, setUser] = useState<any>(null);
   const [websiteTitle, setWebsiteTitle] = useState("BookMyEvent");
   const [websiteLogo, setWebsiteLogo] = useState<string | null>(null);
+  const [isDemoMode, setIsDemoMode] = useState(false);
 
   useEffect(() => {
     async function loadProfile() {
@@ -23,7 +24,6 @@ export default function AttendeeLayoutClient({ children }: { children: React.Rea
           setUser(data.user);
         }
       } catch (e) {
-        // Ignore
       }
     }
     async function loadSettings() {
@@ -33,9 +33,9 @@ export default function AttendeeLayoutClient({ children }: { children: React.Rea
           const data = await res.json();
           if (data.websiteTitle) setWebsiteTitle(data.websiteTitle);
           setWebsiteLogo(data.websiteLogo || null);
+          setIsDemoMode(data.isDemoMode === "1");
         }
       } catch (e) {
-        // ignore
       }
     }
     loadProfile();
@@ -62,8 +62,13 @@ export default function AttendeeLayoutClient({ children }: { children: React.Rea
   };
 
   return (
-    <div className="h-screen w-full flex flex-col md:flex-row bg-background text-foreground transition-colors duration-200 overflow-hidden">
-      <div className="flex-1 flex overflow-hidden">
+    <div className="h-screen w-full flex flex-col bg-background text-foreground transition-colors duration-200 overflow-hidden">
+      {isDemoMode && (
+        <div className="w-full bg-destructive/10 text-destructive text-xs font-semibold py-2.5 px-4 text-center border-b border-destructive/15 select-none shrink-0 animate-fade-in">
+          This is a demo store. No orders will be Honoured.
+        </div>
+      )}
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
         {/* Sidebar Navigation */}
         <aside className="w-72 border-r border-border bg-card hidden md:flex flex-col justify-between p-5 select-none shrink-0 h-full">
           <div className="space-y-7">

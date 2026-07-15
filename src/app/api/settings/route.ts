@@ -23,6 +23,7 @@ export async function GET(){
             metaDescription : general.metaDescription,
             websiteLogo : general.websiteLogo,
             heroHeading : general.heroHeading,
+            isDemoMode : general.isDemoMode,
             captchaTypeRegister : captcha.captchaTypeRegister,
             captchaTypeForgotPassword : captcha.captchaTypeForgotPassword,
             captchaSiteKeyRegister,
