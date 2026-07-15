@@ -55,6 +55,7 @@ The application features a granular role-based access control system supporting 
 
 ### 6. Branding, CAPTCHA Security, & Maintenance Mode
 - **General Branding:** Dynamically updates Website Title (branding name), Website Meta Title (SEO browser tab name), Hero Headline, and Website Logo.
+- **Is Demo Mode Toggle:** Added options `Yes` (1) and `No` (0) in general branding configurations. If enabled, a persistent warning alert notice bar is rendered at the absolute top of the viewport across the storefront and private user workspace hubs to alert users that no real transactions/orders will be processed or fulfilled.
 - **Dynamic favicon:** Automatically updates browser tab favicon to match the uploaded website logo.
 - **Signup Terms Management:** Dynamic subsettings view allowing admins to enable, disable, and modify the global Terms & Conditions content for registration.
 - **Dynamic SMTP Mailer:** Features a central mail dispatcher utilizing **Nodemailer** to route all platform notifications (bookings, OTPs, verifications) dynamically via any custom SMTP server (such as Mailtrap, Gmail, SES, etc.) configured in settings, falling back to the Resend API if host is default `"localhost"`.
@@ -75,6 +76,7 @@ The application features a granular role-based access control system supporting 
 - **Backend API:** Next.js Route Handlers.
 - **Database Layer:** MySQL database managed via Prisma Client.
 - **Authentication & Security:** Custom token-based authentication verified through proxy middleware in `src/proxy.ts`. Route contexts are forwarded via custom headers (`x-user-id`, `x-user-role`).
+- **User Role Check Helpers:** Centralized type-safe utility functions (`isGuest`, `isAdmin`, `isOrganizer`, `isAttendee` in `src/backend/lib/role.ts`) polymorphic to validate active roles using either direct strings, null/undefined values, or Next.js/Web standard Header blocks.
 
 ---
 
