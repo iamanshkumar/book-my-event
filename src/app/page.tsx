@@ -98,12 +98,11 @@ export default function Home() {
   const [websiteTitle, setWebsiteTitle] = useState("BookMyEvent");
   const [websiteLogo, setWebsiteLogo] = useState<string | null>(null);
   const [heroHeading, setHeroHeading] = useState("Unlock Unforgettable Live Experiences");
+  const [isDemoMode, setIsDemoMode] = useState(false);
 
-  // Events Feed State
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Check Auth on Mount
   useEffect(() => {
     async function checkAuth() {
       try {
@@ -113,7 +112,6 @@ export default function Home() {
           setUser(data.user);
         }
       } catch (err) {
-        // Guest user
       } finally {
         setAuthChecked(true);
       }
@@ -126,9 +124,9 @@ export default function Home() {
           if (data.websiteTitle) setWebsiteTitle(data.websiteTitle);
           setWebsiteLogo(data.websiteLogo || null);
           if (data.heroHeading) setHeroHeading(data.heroHeading);
+          setIsDemoMode(data.isDemoMode === "1");
         }
       } catch (err) {
-        // ignore
       }
     }
     checkAuth();
@@ -235,6 +233,11 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-200">
+      {isDemoMode && (
+        <div className="w-full bg-destructive/10 text-destructive text-xs font-semibold py-2.5 px-4 text-center border-b border-destructive/15 select-none shrink-0 animate-fade-in z-50">
+          This is a demo store. No orders will be Honoured.
+        </div>
+      )}
       {/* 1. Glassmorphism Navigation Header */}
       <header className="sticky top-0 z-50 backdrop-blur-md bg-background/80 border-b border-border/40">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">

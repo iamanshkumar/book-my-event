@@ -14,12 +14,12 @@ export default function GeneralSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // States for general settings
   const [websiteTitle, setWebsiteTitle] = useState("");
   const [metaTitle, setMetaTitle] = useState("");
   const [metaDescription, setMetaDescription] = useState("");
   const [websiteLogo, setWebsiteLogo] = useState("");
   const [heroHeading, setHeroHeading] = useState("");
+  const [isDemoMode, setIsDemoMode] = useState("0");
 
   useEffect(() => {
     async function loadSettings() {
@@ -32,6 +32,7 @@ export default function GeneralSettingsPage() {
           setMetaDescription(data.general.metaDescription || "");
           setWebsiteLogo(data.general.websiteLogo || "");
           setHeroHeading(data.general.heroHeading || "");
+          setIsDemoMode(data.general.isDemoMode || "0");
         }
       } catch (err: any) {
         toast.error("Failed to load settings configuration.");
@@ -57,6 +58,7 @@ export default function GeneralSettingsPage() {
             metaDescription,
             websiteLogo,
             heroHeading,
+            isDemoMode,
           },
         }),
       });
@@ -174,6 +176,18 @@ export default function GeneralSettingsPage() {
               value={heroHeading}
               onChange={(e) => setHeroHeading(e.target.value)}
             />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold">Is Demo Mode</Label>
+            <select
+              value={isDemoMode}
+              onChange={(e) => setIsDemoMode(e.target.value)}
+              className="w-full bg-background border border-border text-foreground text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-primary"
+            >
+              <option value="1">Yes</option>
+              <option value="0">No</option>
+            </select>
           </div>
 
           <div className="space-y-1.5">
