@@ -1,14 +1,14 @@
 import { EventService } from "@/backend/services/EventService";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
-import { isOrganiser } from "@/backend/lib/role";
+import { isOrganizer } from "@/backend/lib/role";
 
 export async function POST(request : Request){
     try{
         const headerList = await headers();
         const organizerIdStr = headerList.get("x-user-id");
 
-        if(!organizerIdStr || !isOrganiser(headerList)){
+        if(!organizerIdStr || !isOrganizer(headerList)){
             return NextResponse.json({
                 error: 'Forbidden. Only users with the ORGANIZER role can create events.' ,
             },{

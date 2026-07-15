@@ -1,14 +1,14 @@
 import { prisma } from "@/backend/lib/prisma";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
-import { isOrganiser } from "@/backend/lib/role";
+import { isOrganizer } from "@/backend/lib/role";
 
 export async function GET() {
     try {
         const headerList = await headers();
         const organizerIdStr = headerList.get("x-user-id");
 
-        if (!organizerIdStr || !isOrganiser(headerList)) {
+        if (!organizerIdStr || !isOrganizer(headerList)) {
             return NextResponse.json({ error: "Access denied. Restricted to organizers." }, { status: 403 });
         }
 
@@ -29,7 +29,7 @@ export async function PUT(request: Request) {
         const headerList = await headers();
         const organizerIdStr = headerList.get("x-user-id");
 
-        if (!organizerIdStr || !isOrganiser(headerList)) {
+        if (!organizerIdStr || !isOrganizer(headerList)) {
             return NextResponse.json({ error: "Access denied. Restricted to organizers." }, { status: 403 });
         }
 

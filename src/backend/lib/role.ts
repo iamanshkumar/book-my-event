@@ -22,7 +22,7 @@ export function isAdmin(
   return getRole(roleOrHeaders) === 'ADMIN';
 }
 
-export function isOrganiser(
+export function isOrganizer(
   roleOrHeaders?: string | null | Headers | { get(name: string): string | null }
 ): boolean {
   return getRole(roleOrHeaders) === 'ORGANIZER';

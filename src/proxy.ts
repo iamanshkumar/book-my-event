@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
-import { isAdmin, isOrganiser, isAttendee } from './backend/lib/role';
+import { isAdmin, isOrganizer, isAttendee } from './backend/lib/role';
 
 const AUTH_ROUTES = ['/login', '/register', '/forgot-password'];
 
@@ -93,7 +93,7 @@ export async function proxy(request: NextRequest) {
     if (payload) {
       const role = String(payload.role);
       if (isAdmin(role)) return NextResponse.redirect(new URL('/admin/dashboard', request.url));
-      if (isOrganiser(role)) return NextResponse.redirect(new URL('/organizer/dashboard', request.url));
+      if (isOrganizer(role)) return NextResponse.redirect(new URL('/organizer/dashboard', request.url));
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
     return NextResponse.next();
@@ -131,12 +131,12 @@ export async function proxy(request: NextRequest) {
     if (pathname.startsWith('/admin') && !isAdmin(userRole)) {
       return NextResponse.redirect(new URL('/unauthorized', request.url));
     }
-    if (pathname.startsWith('/organizer') && !isOrganiser(userRole)) {
+    if (pathname.startsWith('/organizer') && !isOrganizer(userRole)) {
       return NextResponse.redirect(new URL('/unauthorized', request.url));
     }
     if (pathname.startsWith('/dashboard') && !isAttendee(userRole)) {
       if (isAdmin(userRole)) return NextResponse.redirect(new URL('/admin/dashboard', request.url));
-      if (isOrganiser(userRole)) return NextResponse.redirect(new URL('/organizer/dashboard', request.url));
+      if (isOrganizer(userRole)) return NextResponse.redirect(new URL('/organizer/dashboard', request.url));
     }
   }
 
