@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
+import { isAdmin, isOrganiser, isAttendee } from './backend/lib/role';
 
 const AUTH_ROUTES = ['/login', '/register', '/forgot-password'];
 
@@ -32,25 +33,23 @@ export async function proxy(request: NextRequest) {
       const decoded = await jwtVerify(sessionToken, encodedSecret);
       payload = decoded.payload;
     } catch (e) {
-      // Token invalid or expired
     }
   }
 
   const userRole = payload ? String(payload.role) : null;
-  const isAdmin = userRole === 'ADMIN';
+  const isUserAdmin = isAdmin(userRole);
 
   const isAdminPath = pathname.startsWith('/admin') || pathname.startsWith('/api/admin');
   const isStatusApi = pathname === '/api/maintenance/status';
   const isMaintenancePage = pathname === '/maintenance';
 
-  if (!isAdminPath && !isStatusApi && !isMaintenancePage && !isAdmin) {
+  if (!isAdminPath && !isStatusApi && !isMaintenancePage && !isUserAdmin) {
     try {
       const baseUrl = request.nextUrl.origin;
       const maintenanceRes = await fetch(`${baseUrl}/api/maintenance/status?t=${Date.now()}`, { cache: 'no-store' });
       if (maintenanceRes.ok) {
         const maint = await maintenanceRes.json();
         if (maint.maintenanceModeEnabled === "1") {
-          // Retrieve and clean client IP
           let clientIp = (request as any).ip || request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || '';
           if (clientIp.includes(',')) {
             clientIp = clientIp.split(',')[0].trim();
@@ -90,12 +89,11 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  // 1. Auth routes redirect logic
   if (AUTH_ROUTES.some((route) => pathname.startsWith(route))) {
     if (payload) {
       const role = String(payload.role);
-      if (role === 'ADMIN') return NextResponse.redirect(new URL('/admin/dashboard', request.url));
-      if (role === 'ORGANIZER') return NextResponse.redirect(new URL('/organizer/dashboard', request.url));
+      if (isAdmin(role)) return NextResponse.redirect(new URL('/admin/dashboard', request.url));
+      if (isOrganiser(role)) return NextResponse.redirect(new URL('/organizer/dashboard', request.url));
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
     return NextResponse.next();
@@ -103,7 +101,6 @@ export async function proxy(request: NextRequest) {
 
   let isProtectedRoute = PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
 
-  // Exclude public GET endpoints under /api/events
   if (pathname.startsWith('/api/events/')) {
     const isPublicGet = (
       request.method === 'GET' && 
@@ -116,7 +113,6 @@ export async function proxy(request: NextRequest) {
 
   console.log("[Proxy] Is Protected Route:", isProtectedRoute);
 
-  // If protected route and not authenticated (or invalid token)
   if (isProtectedRoute) {
     if (!payload) {
       if (pathname.startsWith('/api/')) {
@@ -132,19 +128,18 @@ export async function proxy(request: NextRequest) {
     }
 
     const userRole = String(payload.role);
-    if (pathname.startsWith('/admin') && userRole !== 'ADMIN') {
+    if (pathname.startsWith('/admin') && !isAdmin(userRole)) {
       return NextResponse.redirect(new URL('/unauthorized', request.url));
     }
-    if (pathname.startsWith('/organizer') && userRole !== 'ORGANIZER') {
+    if (pathname.startsWith('/organizer') && !isOrganiser(userRole)) {
       return NextResponse.redirect(new URL('/unauthorized', request.url));
     }
-    if (pathname.startsWith('/dashboard') && userRole !== 'CUSTOMER') {
-      if (userRole === 'ADMIN') return NextResponse.redirect(new URL('/admin/dashboard', request.url));
-      if (userRole === 'ORGANIZER') return NextResponse.redirect(new URL('/organizer/dashboard', request.url));
+    if (pathname.startsWith('/dashboard') && !isAttendee(userRole)) {
+      if (isAdmin(userRole)) return NextResponse.redirect(new URL('/admin/dashboard', request.url));
+      if (isOrganiser(userRole)) return NextResponse.redirect(new URL('/organizer/dashboard', request.url));
     }
   }
 
-  // Inject headers if user is authenticated (whether public or protected route)
   if (payload) {
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set('x-user-id', String(payload.userId));

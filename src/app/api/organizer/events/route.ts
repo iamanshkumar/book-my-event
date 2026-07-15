@@ -1,14 +1,14 @@
 import { prisma } from "@/backend/lib/prisma";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
+import { isOrganiser } from "@/backend/lib/role";
 
 export async function GET(){
     try{
         const headerList = await headers();
         const organizerIdStr = headerList.get("x-user-id");
-        const userRole = headerList.get("x-user-role");
 
-        if(!organizerIdStr || userRole!=="ORGANIZER"){
+        if(!organizerIdStr || !isOrganiser(headerList)){
             return NextResponse.json({
                 error : 'Access restricted to organizers.'
             },{

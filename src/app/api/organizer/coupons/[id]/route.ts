@@ -1,6 +1,7 @@
 import { prisma } from "@/backend/lib/prisma";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
+import { isOrganiser, isAdmin } from "@/backend/lib/role";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -14,10 +15,9 @@ export async function PUT(request: Request, context: RouteContext) {
     }
 
     const headerList = await headers();
-    const role = headerList.get("x-user-role");
     const userIdStr = headerList.get("x-user-id");
 
-    if (role !== "ORGANIZER" && role !== "ADMIN") {
+    if (!isOrganiser(headerList) && !isAdmin(headerList)) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
@@ -48,7 +48,6 @@ export async function PUT(request: Request, context: RouteContext) {
       return NextResponse.json({ error: "Access denied: ownership check failed" }, { status: 403 });
     }
 
-    // Check unique constraint of [userId, code] ignoring this coupon ID
     const duplicate = await prisma.couponCode.findFirst({
       where: {
         userId,
@@ -104,10 +103,9 @@ export async function DELETE(request: Request, context: RouteContext) {
     }
 
     const headerList = await headers();
-    const role = headerList.get("x-user-role");
     const userIdStr = headerList.get("x-user-id");
 
-    if (role !== "ORGANIZER" && role !== "ADMIN") {
+    if (!isOrganiser(headerList) && !isAdmin(headerList)) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
@@ -116,7 +114,6 @@ export async function DELETE(request: Request, context: RouteContext) {
       return NextResponse.json({ error: "Invalid session" }, { status: 401 });
     }
 
-    // Verify ownership
     const coupon = await prisma.couponCode.findUnique({
       where: { id: couponId },
     });

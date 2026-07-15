@@ -14,11 +14,11 @@ import {
 import { error } from "console";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
+import { isAdmin } from "@/backend/lib/role";
 
 async function verifyAdmin(){
     const headerList = await headers();
-    const role = headerList.get("x-user-role");
-    return role==="ADMIN";
+    return isAdmin(headerList);
 }
 
 export async function GET(){

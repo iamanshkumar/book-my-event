@@ -2,14 +2,14 @@ import { prisma } from "@/backend/lib/prisma";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import cc from "currency-codes";
+import { isOrganiser, isAdmin } from "@/backend/lib/role";
 
 export async function GET(request : Request){
     try{
         const headerList = await headers();
-        const role = headerList.get("x-user-role");
         const userIdStr = headerList.get("x-user-id");
 
-        if(role!=="ORGANIZER" && role!=="ADMIN"){
+        if(!isOrganiser(headerList) && !isAdmin(headerList)){
             return NextResponse.json({
                 error : "Access denied"
             },{
@@ -63,10 +63,9 @@ export async function GET(request : Request){
 export async function PUT(request : Request){
     try{
         const headerList = await headers();
-        const role = headerList.get("x-user-role");
         const userIdStr = headerList.get("x-user-id");
 
-        if(role!=="ORGANIZER" && role!=="ADMIN"){
+        if(!isOrganiser(headerList) && !isAdmin(headerList)){
             return NextResponse.json({
                 error : "Access denied"
             },{

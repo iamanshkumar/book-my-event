@@ -1,15 +1,15 @@
 import { prisma } from "@/backend/lib/prisma";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
+import { isAdmin } from "@/backend/lib/role";
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request : Request){
     try{
         const headerList = await headers();
-        const adminRole = headerList.get("x-user-role");
 
-        if(adminRole!=="ADMIN"){
+        if(!isAdmin(headerList)){
             return NextResponse.json({
                 error : 'Forbidden. Admin privileges required.'
             },{

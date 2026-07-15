@@ -1,14 +1,14 @@
 import { prisma } from "@/backend/lib/prisma";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
+import { isOrganiser } from "@/backend/lib/role";
 
 export async function GET() {
     try {
         const headerList = await headers();
         const organizerIdStr = headerList.get("x-user-id");
-        const role = headerList.get("x-user-role");
 
-        if (!organizerIdStr || role !== "ORGANIZER") {
+        if (!organizerIdStr || !isOrganiser(headerList)) {
             return NextResponse.json({ error: "Access denied. Restricted to organizers." }, { status: 403 });
         }
 
@@ -28,9 +28,8 @@ export async function PUT(request: Request) {
     try {
         const headerList = await headers();
         const organizerIdStr = headerList.get("x-user-id");
-        const role = headerList.get("x-user-role");
 
-        if (!organizerIdStr || role !== "ORGANIZER") {
+        if (!organizerIdStr || !isOrganiser(headerList)) {
             return NextResponse.json({ error: "Access denied. Restricted to organizers." }, { status: 403 });
         }
 
@@ -38,7 +37,6 @@ export async function PUT(request: Request) {
         const body = await request.json();
         const { type, street1, street2, state, zipCode, country, phoneNumber, companyName } = body;
 
-        // Input Validations
         if (!type || !street1 || !state || !zipCode || !country || !phoneNumber || !companyName) {
             return NextResponse.json({ error: "Missing required address fields. Company Name is required." }, { status: 400 });
         }

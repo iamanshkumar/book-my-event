@@ -1,14 +1,14 @@
 import { prisma } from "@/backend/lib/prisma";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
+import { isOrganiser, isAdmin } from "@/backend/lib/role";
 
 export async function GET() {
   try {
     const headerList = await headers();
-    const role = headerList.get("x-user-role");
     const userIdStr = headerList.get("x-user-id");
 
-    if (role !== "ORGANIZER" && role !== "ADMIN") {
+    if (!isOrganiser(headerList) && !isAdmin(headerList)) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
@@ -31,10 +31,9 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const headerList = await headers();
-    const role = headerList.get("x-user-role");
     const userIdStr = headerList.get("x-user-id");
 
-    if (role !== "ORGANIZER" && role !== "ADMIN") {
+    if (!isOrganiser(headerList) && !isAdmin(headerList)) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
@@ -52,7 +51,6 @@ export async function POST(request: Request) {
 
     const cleanCode = code.trim().toUpperCase();
 
-    // Check uniqueness constraint of userId + code
     const existing = await prisma.couponCode.findFirst({
       where: {
         userId,
