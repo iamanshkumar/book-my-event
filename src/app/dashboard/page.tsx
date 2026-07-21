@@ -71,11 +71,11 @@ export default function AttendeeDashboard() {
   }, []);
 
   // Calculators
-  const activeBookings = bookings.filter((b) => b.paymentStatus !== "FAILED");
-  const totalTickets = activeBookings.reduce((sum, b) => sum + b.quantity, 0);
+  const activeBookings = bookings.filter((b: any) => b.paymentStatus !== "FAILED");
+  const totalTickets = activeBookings.reduce((sum: number, b: any) => sum + b.quantity, 0);
   const totalSpent = activeBookings
-    .filter((b) => b.paymentStatus === "SUCCESS")
-    .reduce((sum, b) => sum + parseFloat(b.totalPricePaid), 0);
+    .filter((b: any) => b.paymentStatus === "SUCCESS")
+    .reduce((sum: number, b: any) => sum + parseFloat(b.totalPricePaid), 0);
 
   if (loading) {
     return (

@@ -39,9 +39,9 @@ export class DashboardService{
         let totalCapacityAcrossEvents = 0;
 
         const eventBreakdown = events.map((event) => {
-            const eventTicketsSold = event.bookings.reduce((sum, b) => sum + b.quantity, 0);
-            const eventRevenue = event.bookings.reduce((sum, b) => sum + Number(b.totalPricePaid), 0);
-            const eventTotalCapacity = event.ticketTiers.reduce((sum, t) => sum + t.totalSeats, 0);
+            const eventTicketsSold = event.bookings.reduce((sum: number, b: any) => sum + b.quantity, 0);
+            const eventRevenue = event.bookings.reduce((sum: number, b: any) => sum + Number(b.totalPricePaid), 0);
+            const eventTotalCapacity = event.ticketTiers.reduce((sum: number, t: any) => sum + t.totalSeats, 0);
       
             totalRevenue += eventRevenue;
             totalTicketsSold += eventTicketsSold;
