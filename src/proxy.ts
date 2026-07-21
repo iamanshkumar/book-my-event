@@ -7,6 +7,8 @@ const AUTH_ROUTES = ['/login', '/register', '/forgot-password'];
 
 const PROTECTED_ROUTES = [
   '/dashboard',
+  '/admin',
+  '/organizer',
   '/api/events/create',
   '/api/bookings',
   '/api/organizer/',

@@ -26,8 +26,8 @@ export async function GET(){
             })
         ]);
 
-        const globalRevenue = bookingsData.reduce((sum, b) => sum + Number(b.totalPricePaid), 0);
-        const globalTicketsSold = bookingsData.reduce((sum, b) => sum + b.quantity, 0);
+        const globalRevenue = bookingsData.reduce((sum: number, b) => sum + Number(b.totalPricePaid), 0);
+        const globalTicketsSold = bookingsData.reduce((sum: number, b) => sum + b.quantity, 0);
 
         return NextResponse.json({
             metrics: {

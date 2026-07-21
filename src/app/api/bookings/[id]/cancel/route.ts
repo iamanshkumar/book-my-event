@@ -45,6 +45,13 @@ export async function POST(request : Request , context : RouteContext){
                 }
             });
 
+            await tx.couponUsage.deleteMany({
+                where: {
+                    userId,
+                    productId: booking.eventId,
+                }
+            });
+
             return await tx.booking.update({
                 where: { id: bookingId },
                 data: { paymentStatus : 'REFUNDED' } 
