@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/backend/lib/prisma";
 import { headers } from "next/headers";
-import { EventCategory } from "@prisma/client";
+import { EventCategory, Prisma } from "@prisma/client";
 import { isOrganizer, isAdmin } from "@/backend/lib/role";
+
+export const dynamic = 'force-dynamic';
 
 function parseCSV(text: string): string[][] {
   const lines: string[][] = [];
@@ -317,7 +319,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       let createdEventsCount = 0;
       let createdTiersCount = 0;
 

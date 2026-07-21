@@ -1,4 +1,4 @@
-import { EventCategory } from "@prisma/client";
+import { EventCategory, Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import countries from "i18n-iso-countries";
 import enLocale from "i18n-iso-countries/langs/en.json";
@@ -49,7 +49,7 @@ export class EventService {
             throw new Error("Invalid country code. Please provide a valid 3-letter ISO code.");
         }
 
-        return await prisma.$transaction(async(tx)=>{
+        return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
             const event = await tx.event.create({
                 data : {
                     organizerId : input.organizerId,

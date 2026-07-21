@@ -1,6 +1,9 @@
 import { prisma } from "@/backend/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
+
+export const dynamic = 'force-dynamic';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -20,7 +23,7 @@ export async function POST(request : Request , context : RouteContext){
             });
         }
 
-        const cancelledBooking = await prisma.$transaction(async(tx)=>{
+        const cancelledBooking = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
             const booking = await tx.booking.findUnique({
                 where : {id : bookingId},
                 include : {event : true}

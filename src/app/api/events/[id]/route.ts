@@ -1,4 +1,5 @@
 import { prisma } from "@/backend/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import countries from "i18n-iso-countries";
@@ -88,7 +89,7 @@ export async function PUT(request : Request , context : RouteContext){
         });
     }
 
-    const updatedEvent = await prisma.$transaction(async (tx)=>{
+    const updatedEvent = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         const event = await tx.event.update({
             where : {id : eventId},
             data : {

@@ -1,4 +1,5 @@
 import { prisma } from "../lib/prisma";
+import { Prisma } from "@prisma/client";
 import { sendEmail } from "../lib/mail";
 
 interface CreateBookingInput {
@@ -10,7 +11,7 @@ interface CreateBookingInput {
 
 export class BookingService {
     static async reserveTicket(input: CreateBookingInput) {
-        const result = await prisma.$transaction(async (tx) => {
+        const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
             const tiers: any[] = await tx.$queryRaw`
         SELECT id, event_id, available_seats, price_per_seat_excluding_tax, tax_percentage 
         FROM ticket_tiers 

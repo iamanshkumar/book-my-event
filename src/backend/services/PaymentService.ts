@@ -1,4 +1,5 @@
 import { prisma } from "../lib/prisma";
+import { Prisma } from "@prisma/client";
 
 interface SettlePaymentInput{
     bookingId : number;
@@ -7,7 +8,7 @@ interface SettlePaymentInput{
 
 export class PaymentService{
     static async settleBooking(input : SettlePaymentInput){
-        return await prisma.$transaction(async (tx)=>{
+        return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
             const booking = await tx.booking.findUnique({
                 where : {id : input.bookingId},
                 include : {
