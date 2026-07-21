@@ -1,6 +1,8 @@
 import { getCaptchaSettings, getGeneralSettings, getTermsSettings } from "@/backend/lib/settings";
 import { NextResponse } from "next/server";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(){
     try{
         const general = await getGeneralSettings();

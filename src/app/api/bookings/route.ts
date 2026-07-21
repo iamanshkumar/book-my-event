@@ -4,6 +4,8 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { isAttendee } from "@/backend/lib/role";
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request : Request){
     try{
         const headerList = await headers();

@@ -3,6 +3,8 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { isOrganizer } from "@/backend/lib/role";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
     try {
         const headerList = await headers();

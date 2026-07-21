@@ -4,6 +4,8 @@ import { NextResponse } from "next/server";
 import cc from "currency-codes";
 import { isOrganizer, isAdmin } from "@/backend/lib/role";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request : Request){
     try{
         const headerList = await headers();

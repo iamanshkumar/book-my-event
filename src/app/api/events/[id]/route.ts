@@ -3,6 +3,8 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import countries from "i18n-iso-countries";
 
+export const dynamic = 'force-dynamic';
+
 type RouteContext = {params : Promise<{id : string}>};
 
 export async function GET(request : Request , context : RouteContext){
